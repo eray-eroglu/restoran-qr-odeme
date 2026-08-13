@@ -1,291 +1,302 @@
-# Ürün Tanımı — Restoran QR Hesap Bölüşme ve Ödeme (v1)
+# Product Definition — Restaurant QR Bill Splitting & Payment (v1)
 
-> Bu belge, tasarım ve geliştirmeye verilebilecek **kilitlenmiş v1 tanımıdır.**
-> Kararların gerekçeleri için: [CONTEXT.md](CONTEXT.md)
-> Tarih: 2026-08-11
-
----
-
-## 1. Ürün nedir
-
-Restoranda her masada kalıcı bir QR kod bulunur. Masadaki müşteriler QR'ı telefonlarıyla
-okutur — **uygulama indirmeden, kayıt olmadan, hiçbir bilgi girmeden** — o masanın güncel
-adisyonunu görür ve hesabı üç yoldan biriyle öder:
-
-1. **Hesabın tamamını öde**
-2. **Kişi sayısına eşit böl**
-3. **Kendi yiyip içtiği ürünleri seçerek kendi payını öde**
-
-Herkes kendi payını kendi telefonundan bağımsız olarak öder. Hesabın tamamı ödendiğinde masa
-otomatik kapanır.
-
-**Çözdüğü sorun:** kalabalık masalarda hesap kapatma. Garson POS cihazını masaya defalarca
-taşır, herkes sırayla kart uzatır, "sen ne yedin ben ne yedim" pazarlığı yapılır ve masa
-15-20 dakika boşalmaz. Ürün bu turu tamamen ortadan kaldırır.
-
-**Kime satılıyor (ileride):** kalabalık masalı, oturmalı mekanlar — meyhane, bar, brunch
-mekanı, pub. Gelir modeli **şube başı aylık abonelik**; işlem komisyonu yok. Satış argümanı
-komisyon tasarrufu değil, **masa devir hızı**.
-
-**Pazar:** Türkiye, ilk olarak İstanbul.
-
-**Konumlandırma (bilinçli tercih):** Rakiplerin çoğu restoranın operasyonunu değiştirmesini
-ister — sipariş akışını taşı, POS'unu bırak, yeni bir sistem öğren. Bu ürün bunu istemez:
-
-> **"Hiçbir şeyinizi değiştirmiyoruz. Sadece hesap kapatma turunu siliyoruz."**
-
-Özellik listesinde daha dar görünmek kasıtlıdır; restorandan istenen taahhüdü küçülterek
-"evet" almayı kolaylaştırır. (Sipariş alma v2'de gelecek, ama konumlandırma bu kalacak.)
+> This is the **locked v1 definition**, ready to hand to design and development.
+> For the reasoning behind each decision, see [CONTEXT.md](CONTEXT.md).
+> Date: 2026-08-13
 
 ---
 
-## 2. v1 neyi kanıtlamaya çalışıyor
+## 1. What this is
 
-**v1 bir restoran ürünü değildir.** Geliştiricinin kendi arkadaş grubuyla test edeceği,
-müşteri deneyimini doğrulama aracıdır. Bu yüzden v1'de restoran yok, garson yok, POS yok.
+Every table in the restaurant has a permanent QR code. Guests scan it with their phones —
+**no app to install, no sign-up, no information to enter** — see the table's current bill, and
+pay it in one of three ways:
 
-**Başarı kriteri:**
+1. **Pay the whole bill**
+2. **Split equally by number of people**
+3. **Pick the items they personally consumed and pay for those**
 
-> Bir arkadaş grubu (4-5 kişi), geliştiriciden hiç yardım almadan hesabı bölüşüp ödemeyi
-> hızlıca tamamlayabiliyor ve sonrasında deneyimden memnun olduğunu söylüyor.
+Each guest pays their own share independently from their own phone. When the bill is fully
+paid, the table closes automatically.
 
-Bu kriter, kapsam tartışmalarının hakemidir: **bir özellik olmadan da bu kriter sağlanıyorsa,
-o özellik v1'e girmez.** Tasarımın en önemli hedefi hız ve anlaşılırlıktır; görsel iddia
-ikinci sıradadır.
+**The problem it solves:** closing the bill at a crowded table. The server carries the card
+terminal to the table over and over, everyone hands over a card in turn, the "who ate what"
+negotiation drags on, and the table doesn't turn over for 15–20 minutes. This product removes
+that round trip entirely.
 
-**v1'den sonraki adım:** ürünü gerçek restoranlara kullandırıp geri bildirim toplamak.
+**Who it is sold to (later):** sit-down venues with large tables — taverns, bars, brunch
+places, pubs. Revenue model is a **monthly subscription per venue**; no transaction
+commission. The sales argument is not saved commission, it is **table turnover**.
+
+**Market:** Turkey, starting with Istanbul.
+
+**Positioning (deliberate):** Most competitors ask the restaurant to change how it operates —
+move your ordering flow, drop your POS, learn a new system. This product does not:
+
+> **"We don't change anything you do. We just delete the bill-closing round trip."**
+
+Looking narrower on a feature list is intentional; it shrinks the commitment asked of the
+restaurant and makes "yes" easier. (Ordering arrives in v2, but this positioning stays.)
 
 ---
 
-## 3. Sözlük
+## 2. What v1 is trying to prove
 
-| Terim | Tanım |
+**v1 is not a restaurant product.** It is a tool for validating the guest experience, tested
+by the developer with their own group of friends. There is therefore no restaurant, no server,
+and no POS in v1.
+
+**Success criterion:**
+
+> A group of friends (4–5 people) can split and pay the bill quickly, **with no help from the
+> developer**, and afterwards say they were happy with the experience.
+
+This criterion arbitrates every scope argument: **if the criterion is still met without a
+given feature, that feature does not go into v1.** The primary design goal is speed and
+clarity; visual ambition is secondary.
+
+**The step after v1:** put the product in front of real restaurants and collect their feedback.
+
+---
+
+## 3. Glossary
+
+| Term | Definition |
 |---|---|
-| **Masa** | Fiziksel masa. Kalıcı, değişmeyen bir QR koda sahiptir. |
-| **Adisyon** | Bir masaya ait ürün listesi ve toplam tutar. Bir masa gün içinde birçok adisyon görür. |
-| **Oturum** | Bir kişinin QR okutmasıyla başlayan tarayıcı oturumu. Kimlik değildir, isimsizdir. |
-| **Pay** | Bir kişinin ödemeyi üstlendiği tutar. |
-| **Bölüşme modu** | Masa genelinde seçilen üç yöntemden biri. |
-| **Kalan bakiye** | Güncel toplam − ödenen toplam. Masanın kapanma koşulu. |
-| **Makbuz** | Ödeme sonrası gösterilen dijital kanıt. **Yasal fiş değildir.** |
-| **Kurulum ekranı** | v1'de restoran olmadığı için geliştiricinin masa/adisyon oluşturduğu yönetim ekranı. |
+| **Table** | A physical table. Owns a permanent, unchanging QR code. |
+| **Bill** | The item list and total belonging to a table. One table sees many bills per day. |
+| **Session** | A browser session started when someone scans the QR. Not an identity; anonymous. |
+| **Share** | The amount one person commits to paying. |
+| **Split mode** | One of the three methods, chosen once per table. |
+| **Remaining balance** | Current total − amount paid. The table's closing condition. |
+| **Receipt** | The digital proof shown after payment. **Not a fiscal receipt.** |
+| **Fiscal receipt** | The legally required document, issued by the restaurant's own certified register. |
+| **Admin console** | Because there is no restaurant in v1, this is where the developer creates tables and bills. |
 
 ---
 
-## 4. Aktörler
+## 4. Actors
 
-- **Müşteri** — masada oturan kişi. Telefonunda mobil web. Kayıt yok, isim yok, uygulama yok.
-- **Geliştirici (v1'de restoran yerine geçer)** — kurulum ekranından masayı ve adisyonu oluşturur.
-
----
-
-## 5. Uçtan uca senaryo
-
-1. Geliştirici kurulum ekranından bir masa oluşturur, demo menüsünden ürünleri tıklayarak
-   ekler ve masayı **ödemeye açar**.
-2. Masadaki ilk kişi QR'ı okutur. **Hesap ekranı** açılır: adisyon, toplam tutar, üç mod butonu.
-3. İlk kişi bir mod seçer. Seçilen mod **masa genelinde geçerlidir**; ilk ödeme yapılana kadar
-   değiştirilebilir, sonra kilitlenir.
-4. Diğerleri QR'ı okutur ve aynı masayı, aynı modda, canlı ilerlemeyle görür.
-5. Herkes payını öder (3D Secure). Ödeyen kişi makbuzu görür.
-6. Kalan bakiye 0 olduğunda masa **otomatik kapanır** ve herkesin ekranı "hesap tamamen ödendi"
-   durumuna geçer. QR o andan itibaren "bu masada açık hesap yok" gösterir.
+- **Guest** — a person sitting at the table, on mobile web. No sign-up, no name, no app.
+- **Developer (stands in for the restaurant in v1)** — creates the table and bill from the
+  admin console.
 
 ---
 
-## 6. Ekranlar (v1'de toplam 9)
+## 5. End-to-end scenario
 
-### Müşteri tarafı — mobil web, dikey, tek elle kullanılabilir
-
-#### E1. Hesap ekranı
-QR okutunca açılan ana ekran. Kullanıcı buraya defalarca döner; ürünün kalbi budur.
-
-**İçerik:** adisyon kalemleri (ürün adı, adet, tutar) · toplam tutar · **ödenen ve kalan
-bakiye** · ilerleme göstergesi · bölüşme modu seçimi.
-
-**Durumlar:**
-- **E1-a — Açık hesap yok:** "Bu masada şu anda açık bir hesap yok." Başka hiçbir şey yok.
-- **E1-b — Hesap açık, mod seçilmemiş:** adisyon + üç büyük buton:
-  *Hesabın tamamını öde* · *Eşit böl* · *Kendi ürünlerimi seç*
-- **E1-c — Mod seçili, ödeme sürüyor:** adisyon + ilerleme ("**3 payın 2'si ödendi** ·
-  kalan 160,00 TL") + kullanıcının kendi eylem butonu ("Payımı öde" / "Ürünlerimi seç" /
-  "Kalanı ben ödeyeyim").
-
-**Not:** Bu ekran ~1,5–5 saniyede bir kendini yeniler; başkalarının ödemeleri ve seçimleri
-canlı gibi akar. Bu akış görsel olarak sakin olmalı — sayılar sıçramamalı, yenileme
-"yükleniyor" hissi vermemeli.
-
-#### E2. Kişi sayısı
-Yalnızca **"Eşit böl"** seçildiğinde ve yalnızca **ilk kişiye** gösterilir. Tek soru:
-"Masada kaç kişisiniz?" Sayı masaya sabitlenir; ilk ödeme gerçekleştikten sonra değiştirilemez.
-Sonraki kişiler bu ekranı hiç görmez.
-
-*Ayrı ekran yerine E1 içinde bir adım olarak da tasarlanabilir.*
-
-#### E3. Ürün seçme
-Yalnızca **"Kendi ürünlerimi seç"** modunda. Adisyondaki her adet ayrı ayrı seçilebilir
-("2x Köfte" iki ayrı satır gibi davranır).
-
-**Her adedin üç hali var ve görsel olarak birbirinden kesin ayrılmalı:**
-- **Seçilebilir** — dokunulabilir
-- **Başkası seçmiş (kilitli)** — dokunulamaz; isim gösterilmez, sadece "seçildi"
-- **Ödenmiş** — kalıcı olarak kapalı
-
-Altta canlı toplam ve "Öde" butonu. Kullanıcı seçimini istediği zaman geri alabilir.
-
-**Çakışma durumu:** iki kişi neredeyse aynı anda aynı adede dokunursa ikincisi kibar bir
-uyarı görür: *"Bu ürünü az önce başkası seçti."* Bu bir hata değil, normal bir durumdur —
-tasarımı da öyle olmalı (kırmızı hata değil, yumuşak bilgi).
-
-#### E4. Ödeme
-**İçerik:**
-- Ödenecek tutar (büyük, tartışmasız)
-- **Bahşiş satırı:** %5 / %10 / %15 / Yok — tek satır, varsayılan seçili değil, atlanabilir.
-  Seçilince toplam anında güncellenir.
-- Kart formu (kart no, son kullanma, CVC)
-- "Öde" → 3D Secure sayfasına yönlendirme
-
-Toplam iki sayı olarak açıkça gösterilir: **hesap payı** ve **bahşiş**.
-
-#### E5. Sonuç
-- **Başarılı:** makbuz — ödenen tutar, bahşiş, tarih/saat, masa. Adresi **kalıcıdır**;
-  kullanıcı ekran görüntüsü alabilir veya linki saklayabilir. Altında masanın güncel durumu
-  ("kalan 160,00 TL") ve hesap ekranına dönüş.
-- **Başarısız:** ne olduğu sade bir dille + "Tekrar dene". Seçilmiş ürünler serbest bırakılır.
-
-> **Yasal not:** bu bir **makbuzdur, fiş değildir.** Ekranda bunun anlaşılır olması gerekir;
-> yasal fiş restoranın kendi cihazından kesilir.
-
-#### E6. Masa kapandı
-Kalan bakiye 0 olduğunda herkesin ekranı buraya geçer: "Hesap tamamen ödendi. Teşekkürler."
-
-*Ayrı ekran yerine E1'in bir durumu olarak da tasarlanabilir.*
+1. The developer creates a table in the admin console, adds items by tapping them from the
+   demo menu, and **opens the table for payment**.
+2. The first guest scans the QR. The **bill screen** opens: bill items, total, three mode
+   buttons.
+3. The first guest picks a mode. That mode applies **to the whole table**; it can be changed
+   until the first payment goes through, then it locks.
+4. Everyone else scans the QR and sees the same table, in the same mode, with live progress.
+5. Each guest pays their share (3D Secure). Whoever pays sees a receipt.
+6. When the remaining balance hits 0, the table **closes automatically** and everyone's screen
+   moves to "bill fully paid". From that moment the QR shows "no open bill at this table".
 
 ---
 
-### Kurulum tarafı — geliştiricinin ekranı, masaüstü/tablet
+## 6. Screens (9 total in v1)
 
-Bu üç ekranın görsel iddiası yoktur; işlevsel ve hızlı olmaları yeterlidir. İleride restoran
-panelinin tohumudur.
+### Guest side — mobile web, portrait, one-handed
 
-#### E7. Şifre girişi
-Tek alan, ortam değişkeninde tanımlı tek ortak şifre. Kullanıcı hesabı, kayıt, parola
-sıfırlama **yoktur**.
+#### S1. Bill screen
+The screen that opens on scanning the QR. Guests return here repeatedly; this is the heart of
+the product.
 
-#### E8. Masa listesi
-Açık masalar; her satırda toplam, ödenen, kalan bakiye ve mod. Üstte **"Yeni masa"** ve
-**"Örnek masa oluştur"** (içi dolu bir masayı tek tıkla üretir — tekrarlı test için).
+**Content:** bill items (name, quantity, amount) · total · **amount paid and remaining
+balance** · progress indicator · split mode selection.
 
-#### E9. Masa detayı
-- Demo menüsünden tıklayarak ürün ekleme / çıkarma
-- **Masayı ödemeye aç**
-- Masanın **QR linkini** göster (ekranda okutulabilir QR olarak)
-- Ödeme dökümü: her ödeme için **hesap payı** ve **bahşiş** ayrı ayrı
-- **Masayı manuel kapat** (kaçış valfi — kalan bakiye başka yolla tahsil edilmiş sayılır)
+**States:**
+- **S1-a — No open bill:** "There is no open bill at this table right now." Nothing else.
+- **S1-b — Bill open, no mode chosen:** bill items plus three large buttons:
+  *Pay the whole bill* · *Split equally* · *Pick my items*
+- **S1-c — Mode chosen, payment in progress:** bill items plus progress
+  ("**2 of 3 shares paid** · 160.00 TL remaining") plus the guest's own action button
+  ("Pay my share" / "Pick my items" / "I'll cover the rest").
+
+**Note:** this screen refreshes itself every ~1.5–5 seconds, so other people's payments and
+selections appear to flow in live. That flow must feel calm — numbers should not jump and
+refreshes must not read as "loading".
+
+#### S2. Number of people
+Shown **only** when **"Split equally"** is chosen, and **only to the first guest**. One
+question: "How many people are at the table?" The number is fixed to the table and cannot be
+changed once the first payment succeeds. Later guests never see this screen.
+
+*May be designed as a step inside S1 rather than a separate screen.*
+
+#### S3. Item selection
+Only in **"Pick my items"** mode. Every unit on the bill is individually selectable ("2x
+Köfte" behaves as two separate rows).
+
+**Each unit has three states, and they must be unmistakably distinct:**
+- **Available** — tappable
+- **Taken by someone else (locked)** — not tappable; no name shown, just "taken"
+- **Paid** — permanently closed
+
+Live running total and a "Pay" button at the bottom. A guest can undo a selection at any time.
+
+**Conflict case:** if two people tap the same unit at almost the same moment, the second one
+sees a polite message: *"Someone just picked this item."* This is not an error, it is a normal
+occurrence — and it should be designed that way (soft information, not a red error).
+
+#### S4. Payment
+**Content:**
+- Amount due (large, unambiguous)
+- **Tip row:** 5% / 10% / 15% / None — a single row, nothing preselected, skippable.
+  Selecting one updates the total immediately.
+- Card form (number, expiry, CVC)
+- "Pay" → redirect to 3D Secure
+
+The total is always shown as two explicit numbers: **bill share** and **tip**.
+
+#### S5. Result
+- **Success:** receipt — amount paid, tip, timestamp, table. Its URL is **permanent**; the
+  guest can screenshot it or keep the link. Below it, the table's current state
+  ("160.00 TL remaining") and a way back to the bill screen.
+- **Failure:** what happened, in plain language, plus "Try again". Any selected items are
+  released.
+
+> **Legal note:** this is a **receipt, not a fiscal receipt.** That must be clear on screen;
+> the fiscal receipt is issued by the restaurant's own register.
+
+#### S6. Bill fully paid
+When the remaining balance reaches 0, everyone's screen moves here: "The bill is fully paid.
+Thank you."
+
+*May be designed as a state of S1 rather than a separate screen.*
 
 ---
 
-## 7. İş kuralları (kesin, tartışmasız)
+### Admin side — the developer's console, desktop/tablet
 
-**R1 — Bakiye kuralı.**
-Ödenen tutar asla geri alınmaz. Adisyon ödeme sürerken büyüyebilir.
-`Kalan bakiye = güncel toplam − ödenen toplam`.
-Masa **yalnızca kalan bakiye 0 olduğunda** otomatik kapanır.
+These three screens have no visual ambition; being functional and fast is enough. They are the
+seed of the future restaurant panel.
 
-**R2 — Pay hesabı ve kuruş artığı.**
-`Bir ödemenin tutarı = kalan bakiye ÷ kalan ödenmemiş pay sayısı` (kuruşa yuvarlanır).
-**Son kalan pay, kalan bakiyenin tamamıdır.**
-Bu tek kural, 100 ÷ 3 gibi kuruş artıklarını, adisyonun ödeme sırasında büyümesini ve
-"kalanı ben ödeyeyim" durumunu birlikte çözer.
+#### S7. Password entry
+A single field, one shared password held in an environment variable. No user accounts, no
+sign-up, no password reset.
 
-**R3 — Bahşiş bakiyeden bağımsızdır.**
-Her ödeme iki ayrı sayı taşır: hesaba giden tutar ve bahşiş. Kalan bakiyeden **yalnızca**
-hesaba giden tutar düşülür. Masanın kapanması bahşişe bakmaz.
+#### S8. Table list
+Open tables; each row shows total, paid, remaining balance and split mode. At the top:
+**"New table"** and **"Create sample table"** (produces a pre-filled table in one click, for
+repeat testing).
 
-**R4 — Bölüşme modu masa genelinde kilitlidir.**
-Masada tek bir mod geçerlidir. İlk ödeme gerçekleşene kadar değiştirilebilir, sonra kilitlenir.
-Modların karışması (kimi eşit böler, kimi ürün seçer) v1'de **mümkün değildir**.
-
-**R5 — Kişi sayısını ilk kişi belirler.**
-Eşit böl modunda kişi sayısı ilk giren tarafından girilir ve masaya sabitlenir; ilk ödemeden
-sonra değiştirilemez. Sistem kimin ödediğini bilmez, **kaç payın ödendiğini sayar**.
-
-**R6 — Kilidin sahibi sunucudur.**
-Ürün seçimi arayüzde anında görünür (iyimser), ama gerçek kilit sunucudadır. Sunucu ikinci
-seçimi reddederse kullanıcıya "az önce başkası seçti" gösterilir.
-
-**R7 — Sessizleşen oturumun kilidi düşer.**
-Bir telefon ~60 saniye boyunca sunucuya hiç uğramazsa (sayfa kapandı, ekran kilitlendi) o
-oturumun **ödenmemiş** seçimleri serbest bırakılır. **Ödenmiş** seçimler asla serbest kalmaz.
-
-**R8 — Ödeme doğrulaması sunucu tarafındadır.**
-Bir pay, yalnızca sunucu ödeme sağlayıcısından onay aldıktan sonra ödenmiş sayılır.
-Tarayıcıdan gelen sonuç yalnızca "git ve kontrol et" tetiğidir. Kullanıcı 3D ekranından hiç
-dönmese bile pay doğru şekilde ödenmiş görünür.
-
-**R9 — QR kalıcıdır, içerik değişkendir.**
-QR sabit bir adrese gider: `/m/<tahmin-edilemez-rastgele-token>`. "masa-7" gibi tahmin
-edilebilir değer **kullanılmaz**. Sunucu o masada ödemeye açık bir hesap olup olmadığına
-bakar; yoksa E1-a gösterilir. Masa kapanınca link ölür, yeni hesap açılınca aynı QR canlanır.
-
-**R10 — Sıfır form alanı.**
-v1'de kullanıcıdan hiçbir kişisel bilgi alınmaz: isim yok, e-posta yok, telefon yok, kayıt
-yok, SMS doğrulaması yok. Tek girilen şey kart bilgisidir.
+#### S9. Table detail
+- Add/remove items by tapping the demo menu
+- **Open table for payment**
+- **Show the QR link** — both as a URL and as a scannable QR image on screen
+- Payment breakdown: **bill share and tip listed separately** for each payment
+- **Close table manually** (escape hatch — the remaining balance is treated as collected by
+  other means)
 
 ---
 
-## 8. v1 kapsamı DIŞINDA (bilinçli kararlar)
+## 7. Business rules (firm, non-negotiable)
 
-Bunlar unutulmuş değil, **kasıtlı olarak çıkarılmıştır**. Tasarımda bunlara ait ekran,
-buton veya boşluk **bulunmamalıdır**.
+**R1 — Balance rule.**
+Paid amounts are never reversed. The bill may grow while payment is in progress.
+`Remaining balance = current total − amount paid`.
+The table closes automatically **only when the remaining balance is 0**.
 
-| Kapsam dışı | Ne zaman |
+**R2 — Share calculation and rounding remainder.**
+`Payment amount = remaining balance ÷ number of unpaid shares` (rounded to the minor unit).
+**The last remaining share is the entire remaining balance.**
+This single rule handles rounding remainders (100 ÷ 3), a bill growing mid-payment, and
+"I'll cover the rest" all at once.
+
+**R3 — Tips are independent of the balance.**
+Every payment carries two separate numbers: the bill amount and the tip. **Only** the bill
+amount is deducted from the remaining balance. Table closing ignores tips.
+
+**R4 — Split mode is locked table-wide.**
+One mode applies to the whole table. It can be changed until the first payment succeeds, then
+it locks. Mixing modes (some split equally, some pick items) is **not possible** in v1.
+
+**R5 — The first guest sets the number of people.**
+In split-equally mode the count is entered by the first guest and fixed to the table; it cannot
+change after the first payment. The system does not know *who* paid — it **counts how many
+shares are paid**.
+
+**R6 — The server owns the lock.**
+Item selection appears instantly in the UI (optimistic), but the real lock lives on the server.
+If the server rejects a second selection, the guest is told someone just took it.
+
+**R7 — A silent session loses its locks.**
+If a phone does not reach the server for ~60 seconds (page closed, screen locked), that
+session's **unpaid** selections are released. **Paid** selections are never released.
+
+**R8 — Payment verification happens server-side.**
+A share counts as paid only after the server has confirmed it directly with the payment
+provider. Anything coming back from the browser is only a trigger to go and check. Even if the
+guest never returns from the 3D Secure page, the share resolves correctly.
+
+**R9 — The QR is permanent, its content is not.**
+The QR points at a fixed URL: `/t/<unguessable-random-token>`. Guessable values like "table-7"
+are **not used**. The server checks whether the table has a bill open for payment; if not, it
+shows S1-a. When the table closes the link goes dead, and it comes back to life with the next bill.
+
+**R10 — Zero form fields.**
+v1 collects no personal information at all: no name, no email, no phone, no sign-up, no SMS
+verification. The only thing a guest ever types is card details.
+
+---
+
+## 8. Explicitly OUT of scope for v1
+
+These are not oversights — they are **deliberate exclusions**. The design must contain no
+screen, button, or placeholder for them.
+
+| Out of scope | When |
 |---|---|
-| QR'dan sipariş verme | v2 |
-| Menü görüntüleme | v1.5 |
-| POS / adisyon sistemi entegrasyonu | v2 |
-| Kişi bazlı yasal fiş | v2 (POS entegrasyonuyla birlikte) |
-| Restoran / garson paneli | İlk pilot restoranla birlikte |
-| Gerçek para (sandbox kullanılıyor) | İlk pilot restoranla birlikte |
-| E-posta ile makbuz | v1.5 |
-| İade akışı | Gerçek paraya geçişte |
+| Ordering via QR | v2 |
+| Menu browsing | v1.5 |
+| POS / bill-system integration | v2 |
+| Per-person fiscal receipts | v2 (together with POS integration) |
+| Restaurant / server panel | With the first pilot restaurant |
+| Real money (sandbox is used) | With the first pilot restaurant |
+| Receipt by email | v1.5 |
+| Refund flow | When real money starts |
 | Apple Pay / Google Pay | v1.5 |
-| İngilizce ve diğer diller | v1.5 |
-| Tek ürünü birden çok kişiye bölme (şarap şişesi) | v2 |
-| Karma bölüşme modu (kimi eşit böler, kimi ürün seçer) | v2 / v3 |
-| Masa birleştirme, taşıma, masaya sonradan katılan kişi | v2 |
-| Kullanıcı hesabı, geçmiş, sadakat | Yok |
+| English and other languages | v1.5 |
+| Splitting one item across several people (a bottle of wine) | v2 |
+| Mixed split modes | v2 / v3 |
+| Merging/moving tables, guests joining late | v2 |
+| Guest accounts, history, loyalty | Never |
 
 ---
 
-## 9. Teknik kısıtlar
+## 9. Technical constraints
 
-- **Stack:** Next.js + Postgres + Vercel. Müşteri sitesi ve kurulum ekranı **tek kod tabanı**,
-  tek deploy.
-- **v1 yayında olmak zorundadır.** 3D Secure geri dönüşü herkese açık bir HTTPS adresi ister;
-  localhost'ta arkadaş testi yapılamaz.
-- **Gerçek veritabanı şarttır.** Birden çok telefon aynı masayı paylaşır; durum bellekte
-  tutulamaz.
-- **Ödeme sağlayıcısı:** iyzico **sandbox**. Test hesabı e-posta ile açılır, test kartlarıyla
-  çalışılır, gerçek para akmaz, şirket gerekmez. Ödeme entegrasyonu kodda **tek bir katmanın
-  arkasında** durur; sağlayıcı değişirse tek yer değişir.
-- **Güncelleme:** gerçek zamanlı bağlantı (WebSocket/SSE) **yoktur**. Periyodik yenileme:
-  ürün seçme ekranında ~1,5 sn, diğer ekranlarda ~5 sn; ayrıca kullanıcının kendi
-  hareketinden sonra ve sekmeye geri dönüşte anında.
-- **Dil:** yalnızca Türkçe, ama **tüm arayüz metinleri tek bir dosyada** toplanır; koda gömülmez.
-- **Para birimi:** TL. Tüm tutarlar kuruş hassasiyetinde tutulur.
+- **Stack:** Next.js + Postgres + Vercel. Guest site and admin console share **one codebase**
+  and one deployment.
+- **v1 must be live from day one.** The 3D Secure return requires a public HTTPS URL; the
+  friend test cannot run on localhost.
+- **A real database is required.** Several phones share one table; state cannot live in memory.
+- **Payment provider:** iyzico **sandbox**. The test account is opened with an email address,
+  test cards are used, no real money moves, no company registration needed. All payment code
+  sits **behind a single layer** so that swapping providers touches one place.
+- **Updates:** there is **no** realtime connection (no WebSocket/SSE). Polling: ~1.5s on the
+  item-selection screen, ~5s elsewhere; plus an immediate refresh after the guest's own action
+  and on tab refocus.
+- **Interface language:** Turkish only in v1, but **all UI strings live in a single file** and
+  are never inlined in components.
+- **Currency:** Turkish Lira. All amounts are stored as integers in the minor unit (kuruş).
 
 ---
 
-## 10. Yol haritası
+## 10. Roadmap
 
-| Sürüm | İçerik |
+| Release | Contents |
 |---|---|
-| **v1** | Bu belge. Arkadaş testi, sandbox, kurulum ekranı. |
-| **v1.5** | Menü görüntüleme · e-posta makbuz · İngilizce · Apple/Google Pay |
-| **v2** | İlk pilot restoran: gerçek para, restoran/garson paneli, POS entegrasyonu, kişi bazlı fiş, iade akışı, ürün bölüştürme, **QR'dan sipariş verme** |
-| **v3** | Karma bölüşme modu, çok şubeli işletme yönetimi |
+| **v1** | This document. Friend test, sandbox, admin console. |
+| **v1.5** | Menu browsing · email receipts · English · Apple/Google Pay |
+| **v2** | First pilot restaurant: real money, restaurant/server panel, POS integration, per-person fiscal receipts, refunds, item splitting, **ordering via QR** |
+| **v3** | Mixed split modes, multi-venue management |
 
-> **Not:** v2 bu haliyle çok büyük bir sürüm. Pilot restoran bulunduğunda ikiye bölünmesi
-> gerekebilir (önce gerçek para + restoran paneli, sonra POS entegrasyonu + sipariş).
-> Bu karar pilot restoranın ihtiyacına göre verilecek.
+> **Note:** v2 as scoped above is a very large release. Once a pilot restaurant is on board it
+> will likely need to be halved (real money + restaurant panel first, then POS integration and
+> ordering). That call depends on what the pilot restaurant actually needs.

@@ -1,42 +1,44 @@
-# İş Listesi (v1)
+# Work Breakdown (v1)
 
-`PRODUCT.md`'deki v1 tanımının tek tek yazılabilir parçalara bölünmüş hali.
+The v1 definition in `PRODUCT.md`, split into individually buildable pieces.
+These files mirror the GitHub issues — issue `#N` corresponds to `T(N-1)`.
 
-## Nasıl çalışılır
+## How to work through this
 
-- **Bloklayanı bitmemiş issue'ya başlama.** Her issue'nun başında "Bloklayan" satırı var.
-- **Her issue ayrı bir oturumda yapılır.** Bir issue bitince bağlamı temizle (`/clear`), sonrakine
-  sıfırdan başla. Her issue kendi kendine yeter — PRODUCT.md ile birlikte okunduğunda yeterlidir.
-- Biten issue'nun başlığındaki `[ ]` işaretini `[x]` yap.
+- **Do not start an issue whose blockers are still open.** Each issue states its blockers.
+- **One issue per session.** Clear the context between issues; each issue is self-contained and,
+  read alongside `PRODUCT.md`, is enough on its own.
+- Labels carry the status: `status: ready` · `status: in-progress` · `status: blocked`.
+  Extra tags: `owner: human` · `high-risk`.
 
-## Sıra ve bağımlılıklar
+## Order and dependencies
 
 ```
-T01 ─┬─ T03 ─────────────┐
-     ├─ T02 ─┬─ T05 ─ T06 ─ T07 ─┴─ T08 ─┬─ T09 ─┐
-     └─ T04 ─┘                            ├─ T10 ─┼─ T13
-                                          ├─ T11 ─┤
-                                          └─ T12 ─┘
-T00 (hesap açılışları) — T01'den önce, senin yapman gereken adımlar
+#1 T00 ─ #2 T01 ─┬─ #4  T03 ──────────────────────┐
+                 ├─ #3  T02 ─┬─ #6 T05 ─ #7 T06 ─ #8 T07 ─┴─ #9 T08 ─┬─ #10 T09 ─┐
+                 └─ #5  T04 ─┘                                        ├─ #11 T10 ─┼─ #14 T13
+                                                                      ├─ #12 T11 ─┤
+                                                                      └─ #13 T12 ─┘
 ```
 
-**T08 dönüm noktasıdır:** orada elinde eksik ama **uçtan uca çalışan** bir ürün olur.
+**#9 (T08) is the milestone:** at that point you have an incomplete but genuinely working
+end-to-end product.
 
-## Liste
+## List
 
-| # | Başlık | Bloklayan | Kim |
+| Issue | Title | Blocked by | Owner |
 |---|---|---|---|
-| [ ] [T00](T00-hesaplar.md) | Hesap açılışları (iyzico, Vercel, veritabanı, alan adı) | — | **Sen** |
-| [ ] [T01](T01-iskelet.md) | Proje iskeleti ve canlıya alma | T00 | Ajan |
-| [ ] [T02](T02-veri-modeli.md) | Veri modeli ve şema | T01 | Ajan |
-| [ ] [T03](T03-odeme-dikey-dilim.md) | **Ödeme dikey dilimi (en riskli parça)** | T01 | Ajan |
-| [ ] [T04](T04-kurulum-giris.md) | Kurulum: şifre girişi (E7) | T01 | Ajan |
-| [ ] [T05](T05-kurulum-masa-listesi.md) | Kurulum: masa listesi (E8) | T02, T04 | Ajan |
-| [ ] [T06](T06-kurulum-masa-detayi.md) | Kurulum: masa detayı (E9) | T05 | Ajan |
-| [ ] [T07](T07-hesap-ekrani.md) | Hesap ekranı ve yenileme (E1) | T02, T06 | Ajan |
-| [ ] [T08](T08-tamamini-ode.md) | **"Tamamını öde" — ilk uçtan uca akış** (E4, E5, E6) | T03, T07 | Ajan |
-| [ ] [T09](T09-esit-bol.md) | Eşit böl (E2) | T08 | Ajan |
-| [ ] [T10](T10-urun-secme.md) | Ürün seçme ve kilitleme (E3) | T08 | Ajan |
-| [ ] [T11](T11-bahsis-makbuz.md) | Bahşiş ve makbuz | T08 | Ajan |
-| [ ] [T12](T12-kenar-durumlar.md) | Kenar durumlar ve kaçış valfleri | T08 | Ajan |
-| [ ] [T13](T13-cihaz-testi.md) | Gerçek cihaz testi ve cila | T09-T12 | Ajan + **Sen** |
+| [#1](../../../issues/1) | [T00 — Account setup](T00-accounts.md) | — | **You** |
+| [#2](../../../issues/2) | [T01 — Project skeleton and first deploy](T01-skeleton.md) | #1 | Agent |
+| [#3](../../../issues/3) | [T02 — Data model and schema](T02-data-model.md) | #2 | Agent |
+| [#4](../../../issues/4) | [T03 — Payment vertical slice](T03-payment-vertical-slice.md) | #2 | Agent |
+| [#5](../../../issues/5) | [T04 — Admin console: password gate](T04-admin-auth.md) | #2 | Agent |
+| [#6](../../../issues/6) | [T05 — Admin console: table list](T05-admin-table-list.md) | #3, #5 | Agent |
+| [#7](../../../issues/7) | [T06 — Admin console: table detail](T06-admin-table-detail.md) | #6 | Agent |
+| [#8](../../../issues/8) | [T07 — Bill screen and polling](T07-bill-screen.md) | #3, #7 | Agent |
+| [#9](../../../issues/9) | [T08 — Pay the whole bill (end-to-end)](T08-pay-full.md) | #4, #8 | Agent |
+| [#10](../../../issues/10) | [T09 — Split equally](T09-split-equally.md) | #9 | Agent |
+| [#11](../../../issues/11) | [T10 — Item selection and locking](T10-item-selection.md) | #9 | Agent |
+| [#12](../../../issues/12) | [T11 — Tips and receipt](T11-tip-and-receipt.md) | #9 | Agent |
+| [#13](../../../issues/13) | [T12 — Edge cases and escape hatches](T12-edge-cases.md) | #9 | Agent |
+| [#14](../../../issues/14) | [T13 — Real-device testing and polish](T13-device-testing.md) | #10–#13 | Agent + **You** |

@@ -1,85 +1,85 @@
-# Tasarım İsteği — v1 Wireframe
+# Design Request — v1 Wireframes
 
-> Bu dosyayı `PRODUCT.md` ile **birlikte** ver. PRODUCT.md ürünün ne olduğunu anlatır;
-> bu dosya şu anda ne istediğini söyler.
-
----
-
-## Ne istiyorum
-
-`PRODUCT.md` bölüm 6'daki **9 ekranın düşük detaylı (low-fidelity) wireframe'i.**
-
-Bu aşamada renk paleti, tipografi, marka, ikon seti, illüstrasyon **istemiyorum.**
-İstediğim tek şey: **her ekranda hangi bilgi var, hangisi daha önemli, kullanıcı hangi
-butona basıyor.** Gri kutular ve gerçek metin yeterli.
+> Hand this over **together with** `PRODUCT.md`. PRODUCT.md says what the product is; this file
+> says what is being asked for right now.
 
 ---
 
-## Kısıtlar
+## What is being asked for
 
-- **Mobil öncelikli.** Müşteri ekranları (E1-E6) 390px genişlikte, dikey, **tek elle**
-  kullanılabilir olmalı. Ana eylem butonu başparmağın ulaştığı yerde, ekranın altında.
-- **Masada, kalabalıkta, aceleyle kullanılıyor.** Kullanıcı ekranı incelemiyor, bir bakışta
-  anlamaya çalışıyor. Sayılar büyük ve tartışmasız olmalı.
-- **Kayıt yok, form yok.** Kart bilgisi dışında hiçbir giriş alanı olmayacak
-  (`PRODUCT.md` R10). İsim, e-posta, telefon alanı **koyma**.
-- Kurulum ekranları (E7-E9) masaüstü, işlevsel, görsel iddiası yok. **En son ele al.**
+**Low-fidelity wireframes** of the 9 screens listed in `PRODUCT.md` section 6.
+
+At this stage there is **no** request for a colour palette, typography, branding, icon set or
+illustration. The only thing wanted is: **what information is on each screen, what matters most,
+and which button the guest presses.** Grey boxes and real copy are enough.
 
 ---
 
-## Bu wireframe'de kritik olan iki ekran
+## Constraints
 
-Diğer yedisi kolay; bu ikisi ürünün başarısını belirliyor:
-
-### E1 — Hesap ekranı, bilgi hiyerarşisi
-Ekranda dört bilgi yarışıyor: **adisyon kalemleri**, **toplam tutar**, **kalan bakiye ve
-ilerleme**, **mod butonları**. Hepsi aynı anda önemli değil.
-
-Benim beklentim: kullanıcı ekrana baktığı ilk saniyede **"ne kadar ödeyeceğim"** sorusunun
-cevabını görmeli; adisyon kalemleri ikinci sırada, referans amaçlı. Ama bunu bir öneri olarak
-alıp **birkaç alternatif hiyerarşi dene** — hangisinin daha hızlı okunduğunu görmek istiyorum.
-
-### E3 — Ürün seçme, üç hal
-Her ürün adedinin üç hali var ve bunlar **bir bakışta** ayrılmalı:
-**seçilebilir** · **başkası seçmiş (kilitli)** · **ödenmiş**.
-
-Kilitli ürünlerde **isim gösterilmez** (sistem kimseyi tanımıyor), sadece "seçildi".
-Bu üç halin ayrımı wireframe'de bile net olmalı — renk olmadan, sadece biçim ve doku ile.
+- **Mobile first.** Guest screens (S1–S6) at 390px wide, portrait, usable **one-handed**. The
+  primary action button sits within thumb reach at the bottom of the screen.
+- **Used at a table, in a crowd, in a hurry.** The guest is not studying the screen, they are
+  trying to understand it at a glance. Numbers must be large and unambiguous.
+- **No sign-up, no forms.** Apart from card details there are no input fields at all
+  (`PRODUCT.md` R10). Do **not** add name, email or phone fields.
+- Admin screens (S7–S9) are desktop, functional, no visual ambition. **Do these last.**
 
 ---
 
-## Mutlaka çiz: sadece mutlu yol değil
+## The two screens that matter most
 
-Wireframe'lerin en sık kaçırdığı yer burası. Şu durumları da ayrı ayrı istiyorum:
+The other seven are easy; these two decide whether the product works:
 
-| Durum | Nerede |
+### S1 — Bill screen, information hierarchy
+Four pieces of information compete: **bill items**, **total**, **remaining balance and
+progress**, **mode buttons**. They are not equally important.
+
+The expectation: in the first second, the guest should be able to answer **"how much am I
+paying?"** — bill items come second, as reference. Treat that as a proposal and **try a few
+alternative hierarchies**; the point is to see which one reads fastest.
+
+### S3 — Item selection, three states
+Each unit has three states that must be distinguishable **at a glance**:
+**available** · **taken by someone else (locked)** · **paid**.
+
+Locked items show **no name** (the system knows nobody), just "taken". These three states must
+read clearly even in a wireframe — without colour, using form and texture alone.
+
+---
+
+## Draw the unhappy paths too, not just the happy one
+
+This is what wireframes most often skip. These states are all required, separately:
+
+| State | Where |
 |---|---|
-| Bu masada açık hesap yok | E1-a |
-| Hesap açık, mod henüz seçilmemiş | E1-b |
-| Mod seçili, başkaları ödemeye devam ediyor | E1-c |
-| "Bu ürünü az önce başkası seçti" uyarısı | E3 — hata gibi değil, yumuşak bilgi |
-| Ödeme başarısız oldu | E5 |
-| Hesap tamamen ödendi | E6 |
+| No open bill at this table | S1-a |
+| Bill open, no mode chosen yet | S1-b |
+| Mode chosen, others still paying | S1-c |
+| "Someone just picked this item" | S3 — soft information, not an error |
+| Payment failed | S5 |
+| Bill fully paid | S6 |
 
 ---
 
-## Ekranlarda kullan (gerçekçi örnek içerik)
+## Use this sample content
 
-Boş kutular yerine gerçek içerikle çiz — hiyerarşi ancak gerçek metinle test edilir.
+Draw with real content rather than empty boxes — hierarchy can only be tested with real copy.
 
-**Masa 7 — Adisyon**
-- 2x Adana Kebap — 960,00 TL
-- 1x İçli Köfte — 220,00 TL
-- 3x Ayran — 135,00 TL
-- 2x Efes (50cl) — 380,00 TL
-- 1x Künefe — 265,00 TL
+**Table 7 — Bill**
+- 2x Adana Kebap — 960.00 TL
+- 1x İçli Köfte — 220.00 TL
+- 3x Ayran — 135.00 TL
+- 2x Efes (50cl) — 380.00 TL
+- 1x Künefe — 265.00 TL
 
-**Toplam: 1.960,00 TL** · Ödenen: 653,33 TL · **Kalan: 1.306,67 TL**
-İlerleme: *3 payın 1'i ödendi*
+**Total: 1,960.00 TL** · Paid: 653.33 TL · **Remaining: 1,306.67 TL**
+Progress: *1 of 3 shares paid*
 
 ---
 
-## Çıktı
+## Deliverable
 
-Önce **E1'in 2-3 alternatifi**. Onu birlikte netleştirdikten sonra kalan ekranlara geçelim —
-hepsini tek seferde çizmeni istemiyorum, çünkü E1'in hiyerarşisi diğerlerini de belirleyecek.
+First, **2–3 alternatives for S1**. Once that is settled we move on to the rest — do not draw
+all nine at once, because S1's hierarchy will drive the others.

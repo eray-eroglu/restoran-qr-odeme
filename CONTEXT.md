@@ -1,317 +1,267 @@
-# Restoran QR Ödeme — CONTEXT
+# Restaurant QR Payment — CONTEXT
 
-> Bu dosya, ürün tanımı netleşene kadar alınan **kararların** ve **açık soruların** tek kaynağıdır.
-> Nihai çıktı: Claude Design'a verilebilecek net, tutarlı, uygulanabilir ürün tanımı.
-> Son güncelleme: 2026-08-11 — **Tüm turlar tamamlandı, açık soru kalmadı.**
-> Ürün tanımı: [PRODUCT.md](PRODUCT.md)
-
----
-
-## 1. Ürün özeti (bir paragraf)
-
-Restoranda her masada bir QR kod bulunur. Masadaki müşteriler QR'ı telefonlarıyla okutur,
-**uygulama indirmeden** o masanın güncel adisyonunu görür ve hesabı üç şekilden biriyle öder:
-tamamını, kişi sayısına eşit bölerek, ya da kendi yiyip içtiği ürünleri seçerek. Herkes kendi
-payını bağımsız öder; tüm hesap ödendiğinde masa kapanır.
+> The single source of truth for **decisions made** and **why**.
+> Final output: [PRODUCT.md](PRODUCT.md) — the locked v1 product definition.
+> Last updated: 2026-08-13. **All rounds complete; no open questions.**
 
 ---
 
-## 2. Sözlük (ubiquitous language)
+## 1. One-paragraph summary
 
-Terimler netleştikçe burası doldurulacak. Şimdilik dikkat edilecek çakışmalar:
-
-| Terim | Tanım | Not |
-|---|---|---|
-| **Masa** | Fiziksel masa. Sabit bir QR koda sahiptir. | Masa ≠ Adisyon. Bir masa gün içinde çok adisyon görür. |
-| **Adisyon** | Bir masaya ait, açılış-kapanış arası ürün listesi + tutar. | POS tarafındaki "hesap". |
-| **Oturum (Session)** | Bir müşterinin QR okutmasıyla başlayan tarayıcı oturumu. | Kimlik değil. Kaç kişi olduğu bilinmez. |
-| **Pay** | Bir kişinin ödemeyi taahhüt ettiği tutar. | Ödeme öncesi geçici, ödeme sonrası kalıcı. |
-| **Fiş** | Yasal ÖKC belgesi. | Bizim ürettiğimiz "makbuz" fiş DEĞİLDİR. Bkz. Q9. |
-| **Makbuz** | Bizim müşteriye gösterdiğimiz ödeme kanıtı. | Yasal belge değil. |
+Every table has a QR code. Guests scan it, see the table's current bill **without installing
+an app**, and pay one of three ways: the whole bill, an equal split by headcount, or only the
+items they consumed. Everyone pays independently; the table closes when the bill is fully paid.
 
 ---
 
-## 3. Kararlar (Tur 1)
+## 2. Decisions
 
-### D1 — Pazar: Türkiye / İstanbul
-İlk pazar Türkiye, ağırlıklı İstanbul. Mevzuat (Yeni Nesil ÖKC, fiş zorunluluğu) ve
-POS ekosistemi buna göre tasarlanacak.
+### D1 — Market: Turkey / Istanbul
+First market Turkey, Istanbul-weighted. Regulation (certified fiscal registers, mandatory
+fiscal receipts) and the POS ecosystem are designed around this.
 
-### D2 — Kapsam: Sadece ödeme (v1)
-v1 yalnızca **ödeme**. Sipariş alma kapsam dışı.
-Yol haritası: **v1 ödeme → v1.5 menü görüntüleme → v2 QR'dan sipariş**.
+### D2 — Scope: payment only (v1)
+v1 is **payment only**. Ordering is out of scope.
+Path: **v1 payment → v1.5 menu browsing → v2 ordering via QR**.
 
-### D3 — Hedef segment: esnek, kalabalık masa ağırlıklı
-Segment kilitlenmeyecek; ihtiyacı olan her işletmeye satılabilir. Ama ürün tasarımı
-**kalabalık masalı mekanlar** (meyhane/bar/brunch/pub) üzerinden yapılacak — hesap
-bölüşme acısı orada en yüksek.
+### D3 — Target segment: flexible, large-table venues
+The segment is not locked; it can be sold to anyone who needs it. But the product is designed
+around **venues with large tables** (taverns/bars/brunch/pubs), where the bill-splitting pain
+is highest.
 
-### D4 — Adisyon kaynağı: v1'de manuel, POS entegrasyonu v2
-v1'de POS entegrasyonu **yok**. Adisyon verisi restoran personeli tarafından bizim
-panelimize girilir. Gerekçe: maliyeti düşük tutmak, hızlı sahaya çıkmak, restoranların
-ürünü kabul edip etmeyeceğini test etmek.
-**Risk (kabul edildi):** çift veri girişi. Bu riskin nasıl azaltılacağı → Q10.
-POS entegrasyonu (Adisyo/Simpra vb.) v2'ye ertelendi.
+### D4 — Bill source: manual in v1, POS integration in v2
+No POS integration in v1. Rationale: keep cost low, ship fast, test whether restaurants accept
+the product at all.
+**Accepted risk:** double data entry. How to mitigate it → see D10.
 
-### D5 — Para akışı: doğrudan model (restoranın kendi üye işyeri hesabı)
-Para bize uğramaz. Her restoran iyzico/PayTR gibi bir sağlayıcıda **kendi** üye işyeri
-hesabını açar; ödeme doğrudan restorana gider. Biz sadece ödeme akışını yönetiriz.
-Gerekçe: gelir modeli abonelik olduğu için komisyon kesme ihtiyacı yok → toplayıcı
-(aracı) olmanın tek gerçek avantajı ortadan kalkıyor. Yasal yük sıfır, ödeme kuruluşu
-lisansı gerekmiyor.
-**Kabul edilen bedel:** her yeni restoran için üye işyeri açılış süreci (1-3 gün).
-Ölçeklendiğinde (10+ restoran) "alt üye işyeri / marketplace" modeline geçiş değerlendirilecek.
+### D5 — Money flow: direct model (the restaurant's own merchant account)
+Money never passes through us. Each restaurant opens **its own** merchant account with a
+provider (iyzico/PayTR); payment goes straight to the restaurant. We only drive the flow.
+Rationale: since revenue is subscription-based, there is no need to deduct commission — which
+removes the only real advantage of being an aggregator. Zero regulatory burden, no payment
+institution licence required.
+**Accepted cost:** merchant onboarding per restaurant (1–3 days). At 10+ restaurants, a
+marketplace / sub-merchant model gets reconsidered.
 
-### D6 — Gelir modeli: aylık abonelik
-Şube başı (veya masa başı) aylık sabit abonelik. İşlem komisyonu yok.
-Satış argümanı: **masa devir hızı** — garsonun hesap kapatma turlarının ortadan kalkması.
+### D6 — Revenue model: monthly subscription *(superseded in status by D35)*
+Fixed monthly subscription per venue. No transaction commission.
+Sales argument: **table turnover**, not commission savings.
 
-### D7 — Bahşiş: opsiyonel, ödeme ekranında
-Ödeme ekranında "bahşiş bırak" seçeneği sunulur. Zorunlu değil.
-Bahşişin garsona mı yazılacağı yoksa havuza mı gireceği **işletmenin kendi kararıdır**;
-ürün bunu bir ayar olarak sunar, dağıtımı yönetmez.
+### D7 — Tips: optional, on the payment screen
+A "leave a tip" option on the payment screen. Not mandatory.
+Whether the tip goes to the server or into a pool is **the venue's own decision**; the product
+exposes it as a setting and does not manage distribution.
 
-### D8 — Ekip ve hedef: solo geliştirici, mümkün olan en basit v1
-Tek kişi. Amaç: restoranların ürünü benimseyip benimsemeyeceğini ölçecek **en basit
-çalışan versiyon**. Karmaşıklık sonraya. Pilot restoran durumu henüz netleşmedi.
+### D8 — Team and goal: solo developer, simplest possible v1
+One person. Goal: the simplest working version that measures whether restaurants would adopt
+this. Complexity comes later.
 
----
+### D9 — Fiscal receipts: digital receipt in v1, fiscal receipt stays with the restaurant
+v1 shows a **digital receipt** (not a legal document). The fiscal receipt is issued by the
+restaurant's certified register as usual. **Per-person fiscal receipts are out of scope for
+v1** and arrive in v2 with POS integration.
 
-## 4. Kararlar (Tur 2)
+### D10 — No restaurant side in v1; the developer creates the bill
+**Reframing:** v1 is not a restaurant product, it is a **guest-experience validation tool**.
+The developer will test it with a group of friends. So v1 has no POS integration, no server
+panel, and no double-entry problem; the developer enters the bill from a simple console.
+How the restaurant side works (integration vs manual panel) gets decided **when the first pilot
+restaurant is found** — at which point which POS they run is also known.
+Target state (v2+): the server enters data once, integrated with the kitchen/POS.
 
-### D9 — Fiş: v1'de dijital makbuz, yasal fiş restoranda
-v1'de kullanıcıya **dijital makbuz** (yasal belge değil) gösterilir. Yasal fiş her zamanki
-gibi restoranın ÖKC cihazından kesilir. **Kişi bazlı fiş v1 kapsamı dışıdır** ve POS
-entegrasyonuyla birlikte v2'de gelir.
+### D11 — Identity: fully anonymous, no names
+No name or nickname is requested. Coordination at the table is left to the people at it.
+No SMS verification, no accounts, no app. *(Revised by D23: no email either.)*
 
-### D10 — v1'de restoran tarafı yok; adisyonu geliştirici kurar
-**Yeniden çerçeveleme:** v1 bir restoran ürünü değil, **müşteri deneyimini doğrulama
-aracıdır**. Geliştirici arkadaş grubuyla test edecek. Dolayısıyla v1'de POS entegrasyonu,
-garson paneli ve çift veri girişi problemi **yoktur**; adisyonu basit bir kurulum
-ekranından geliştirici kendisi girer.
-Restoran tarafının nasıl çalışacağı (POS entegrasyonu mu, manuel panel mi) **ilk pilot
-restoran bulunduğunda** karara bağlanacak — o an hangi POS'un kullanıldığı da öğrenilmiş olur.
-Hedef durum (v2+): garsonun tek bir yere girmesi, mutfak/POS ile entegre.
+### D12 — Concurrency: per-unit locking
+When a guest adds a unit to their share, that unit locks for everyone else. "2x Köfte" behaves
+as two separately selectable units. v1 has **no splitting of a single item across people** (v2).
+Locks must expire.
 
-### D11 — Kimlik: tam anonim, isim yok
-Kullanıcıdan isim/takma ad **istenmez**. Masadaki koordinasyon samimiyete bırakılır.
-Ödeme sonrası **opsiyonel e-posta** alınır (yalnızca dijital makbuz için).
-SMS doğrulaması yok, hesap açma yok, uygulama yok.
+### D13 — Balance rule (the most critical rule in v1)
+> **Paid amounts are never reversed. The bill may grow during payment.
+> Remaining balance = current total − amount paid. The table closes only at zero.**
 
-### D12 — Eşzamanlılık: adet bazlı kilitleme
-Bir kullanıcı bir ürün adedini kendi payına eklediğinde o adet diğerlerinde kilitlenir.
-"2x köfte" iki ayrı seçilebilir adet gibi davranır. v1'de **tek bir ürünü birden çok
-kişiye bölme yoktur** (v2). Kilitlerin zaman aşımı olmalıdır (öneri: 5 dk).
+### D14 — Payment: cards only, 3D Secure mandatory
+Cards only, 3D Secure required. No Apple Pay / Google Pay (not widespread in Turkey). A failed
+3D Secure attempt releases any locked items.
 
-### D13 — Bakiye kuralı (v1'in en kritik kuralı)
-> **Ödenen tutar asla geri alınmaz. Adisyon ödeme sırasında büyüyebilir.
-> Kalan bakiye = güncel toplam − ödenen toplam. Masa yalnızca kalan bakiye 0 olduğunda kapanır.**
+### D15 — QR: permanent table QR + session gating
+One permanent QR per table carrying an **unguessable random token** (`/t/<token>`; never a
+guessable value like "table-7"). The server checks whether the table has a bill open for
+payment; if not, it shows the empty state. Closing the table kills the link; opening a new bill
+revives the same QR.
 
-### D14 — Ödeme: sadece kart, 3D Secure zorunlu
-v1'de yalnızca kredi/banka kartı, 3D Secure zorunlu. Apple Pay / Google Pay yok
-(Türkiye'de yaygın değil). Başarısız 3D işleminde kilitlenen ürünler serbest bırakılır.
+### D16 — v1 success criterion
+> **A group of friends (4–5) completes splitting and paying quickly with no help from the
+> developer, and afterwards reports being happy (short survey).**
 
-### D15 — QR: statik masa QR'ı + oturum kısıtı
-Masaya kalıcı olarak yapıştırılan, **tahmin edilemez rastgele token** taşıyan tek bir QR
-(`/m/<rastgele-token>`; "masa-7" gibi tahmin edilebilir değer kullanılmaz). Sunucu o masada
-**ödemeye açık bir hesap olup olmadığını** kontrol eder; yoksa "bu masada açık hesap yok"
-gösterir. Masa kapanınca link ölür, yeni hesap açılınca aynı QR yeniden canlanır.
+This criterion arbitrates scope: if it holds without a feature, that feature is out.
+Next step after v1: put it in front of real restaurants.
 
----
+### D17 — Payment: sandbox (test mode)
+No real money in v1. The provider's test environment is used; the full flow including 3D Secure
+works end to end with test cards.
+Consequence: company registration and merchant onboarding are **deferred to the first pilot
+restaurant**.
 
-## 5. v1 tasarım ilkesi (kullanıcının açık talebi)
+### D18 — Bill setup: fixed menu + tap to add + sample table
+A small fixed demo menu (~20 items). The developer builds a table by tapping items. A
+**"Create sample table"** button produces a pre-filled table in one click (for repeat testing).
+This console is used only by the developer; it needs no visual polish.
 
-**İlk versiyon olabildiğince basit olacak.** Geliştirici tek başına, arkadaş grubuyla test
-edecek; kolay ve rahat bulunursa restoranlarla görüşmeye geçilecek. Bu yüzden her özellik
-sorusunda varsayılan cevap "v1'e koyma"dır; aksini gerektiren güçlü bir gerekçe olmalıdır.
+### D19 — Split equally: the first guest sets the headcount
+The first guest to arrive sets the number of people; it is fixed to the table and cannot change
+after the first payment. The system does not need to know who paid — **counting paid shares is
+enough**. Everyone sees "2 of 3 shares paid · 160.00 TL remaining".
+Guests joining late are **out of scope** (if the bill is being paid, people are leaving).
 
----
+### D20 — Split mode is locked table-wide (v1)
+One mode per table, chosen once: **pay in full / split equally / pick my items**. Changeable
+**until the first payment**, then locked. Mixed modes are **out of scope for v1** — reconsidered
+in v2/v3.
 
-## 6. Kararlar (Tur 3)
+### D21 — Table closing and unpaid remainder
+The table closes automatically **only at zero remaining balance**. Two escape routes exist in v1:
+1. **"I'll cover the rest"** — anyone at the table can take on the entire remaining balance.
+2. **Manual close (escape hatch)** — the remainder is treated as collected another way
+   (cash/terminal) and the table is closed from the admin console.
 
-### D16 — v1 başarı kriteri
-> **Bir arkadaş grubu (4-5 kişi), geliştiriciden hiç yardım almadan, hesabı bölüşüp
-> ödemeyi hızlıca tamamlayabiliyor ve sonrasında deneyimden memnun olduklarını
-> söylüyor (kısa anket).**
+The product only cares whether the bill closed; how it closed is flexible.
 
-Bu kriter, "bu özellik v1'e girsin mi?" sorusunun hakemidir: özellik olmadan kriter
-sağlanıyorsa özellik v1'e girmez.
-Bir sonraki adım (v1'den sonra): ürünü restoranlara kullandırmak ve onların geri
-bildirimiyle geliştirmek.
+### D22 — Tips are in v1
+A **single row** on the payment screen: 5% / 10% / 15% / None. Nothing preselected, skippable,
+not a separate screen. Distribution is not the product's problem (see D7).
 
-### D17 — Ödeme: sandbox (test modu)
-v1'de gerçek para akmaz. Ödeme sağlayıcının **test ortamı** kullanılır; 3D Secure akışı
-dahil gerçek ödeme akışı uçtan uca çalışır, test kartlarıyla denenir.
-Sonuç: şirket kurma / üye işyeri başvurusu **ilk pilot restorana kadar ertelendi**.
+### D23 — Receipt: on screen only, permanent URL. No email.
+The receipt is shown on screen at a permanent URL (screenshot or keep the link). **No email in
+v1.**
+→ This revises D11: **v1 collects nothing from the guest** — no name, no email, no phone. Zero
+form fields. That feeling is exactly what is being tested.
 
-### D18 — Adisyon kurulumu: sabit menü + tıklayarak ekleme + örnek masa
-Küçük ve sabit bir demo menüsü tanımlanır (~20 ürün). Geliştirici ürünlere tıklayarak
-masa kurar. Ayrıca **"örnek masa oluştur"** butonu ile içi dolu bir masa tek tıkla üretilir
-(tekrarlı test için). Bu ekran yalnızca geliştiricinin kullandığı kurulum ekranıdır;
-görsel özen gerektirmez.
+### D24 — Updates: polling, server as referee
+No realtime connection (WebSocket/SSE). Polling: ~1.5s on the item-selection screen, ~5s
+elsewhere; plus an immediate refresh after the guest's own action and on tab refocus.
+**Rule: the server owns the lock.** The UI is optimistic (your own action shows instantly); if
+the server rejects, the guest is told someone just took it.
+Rationale: the delay only applies to seeing *other people's* actions, which is imperceptible for
+people sitting at the same table. The same-instant race exists with a realtime connection too;
+what solves it is the server being the referee.
 
-### D19 — "Eşit böl": kişi sayısını ilk kişi girer, sabitlenir
-Masaya ilk giren kişi kişi sayısını belirler; sayı masaya sabitlenir ve ilk ödeme
-gerçekleştikten sonra değiştirilemez. Sistemin kimin ödediğini bilmesine gerek yoktur;
-**kaç payın ödendiğini saymak** yeterlidir. Herkesin ekranında "3 payın 2'si ödendi,
-kalan pay: 160 TL" görünür.
-Sonradan masaya katılan kişi senaryosu **kapsam dışıdır** (hesap ödeniyorsa masadan
-kalkılıyordur, yeni sipariş beklenmez).
+### D25 — Undo and lock expiry
+A guest can undo a selection at any time. If a phone does not reach the server for ~60 seconds
+(page closed, screen locked), that session's **unpaid** selections are released. Polling doubles
+as the "I'm still here" signal, so no separate timer is needed. **Paid** selections are never
+released (D13).
 
-### D20 — Bölüşme modu masa genelinde kilitli (v1)
-Masa açılışında bir kez mod seçilir: **tamamını öde / eşit böl / kendi ürünlerini seç**.
-Seçilen mod masa geneli için geçerlidir; **ilk ödeme gerçekleşene kadar** değiştirilebilir,
-sonra kilitlenir. Modların karışması (kimi eşit böler, kimi ürün seçer) **v1 kapsamı
-dışıdır** — v2/v3'te değerlendirilecek.
+### D26 — Admin console: definition and protection
+Because v1 has no restaurant or server, the **admin console** is the developer's management
+screen: create table · add items by tapping the demo menu · create sample table · open table
+for payment · show the table's QR link · close table manually (D21 escape hatch).
+It is served from the **same domain** as the guest site, so it is protected by a **single shared
+password** in an environment variable. No user accounts.
+This console is the seed of the future restaurant panel.
 
-### D21 — Masanın kapanması ve eksik bakiye
-Masa **yalnızca kalan bakiye 0 olduğunda** otomatik kapanır. Eksik bakiye için iki yol
-v1'de birlikte bulunur:
-1. **"Kalanı ben ödeyeyim"** — masadaki herhangi biri kalan bakiyenin tamamını üstlenebilir.
-2. **Manuel kapatma (kaçış valfi)** — kalan bakiye başka yolla (nakit/POS) tahsil edilmiş
-   sayılarak masa kurulum ekranından kapatılabilir.
+### D27 — Interface language: Turkish only
+v1 ships in Turkish. But **all UI strings live in one file**, never inlined in components, so
+adding English later is a file copy rather than a code sweep.
 
-Ürünün tek ilgilendiği şey masanın hesabının kapanıp kapanmadığıdır; nasıl kapandığı
-esnektir.
-
----
-
-## 7. Kararlar (Tur 4)
-
-### D22 — Bahşiş v1'de var
-Ödeme ekranında **tek satır**: %5 / %10 / %15 / Yok. Varsayılan seçili değil, atlanabilir.
-Ayrı ekran değildir. Bahşişin dağıtımı ürünün sorunu değildir (bkz. D7).
-
-### D23 — Makbuz: sadece ekranda, kalıcı adresle. E-posta yok.
-Ödeme sonrası makbuz ekranda gösterilir ve adresi kalıcıdır (kullanıcı ekran görüntüsü
-alabilir veya linki saklayabilir). **v1'de e-posta yoktur.**
-→ Bu D11'i revize eder: **v1'de kullanıcıdan hiçbir bilgi alınmaz** — ne isim, ne e-posta,
-ne telefon. Sıfır form alanı. Test edilen his tam olarak budur.
-
-### D24 — Güncelleme: periyodik yenileme (polling), sunucu hakem
-Gerçek zamanlı bağlantı (WebSocket/SSE) **yoktur**. Telefon sunucuya periyodik olarak sorar:
-ürün seçme ekranında ~1.5 sn, özet/bekleme ekranında ~5 sn.
-Ek olarak: kullanıcının **kendi hareketinden hemen sonra** ve **sekmeye geri döndüğünde**
-anında yenilenir.
-**Kural: kilidin gerçek sahibi sunucudur.** Arayüz iyimser davranır (kendi hareketin anında
-görünür), sunucu reddederse "Bu ürünü az önce başkası seçti" gösterilir.
-Gerekçe: gecikme yalnızca *başkasının* hareketini görmede geçerlidir ve aynı masada oturan
-insanlar için fark edilmez. Aynı anda aynı ürüne dokunma yarışı gerçek zamanlı bağlantıda
-da olur; onu çözen şey sunucunun hakem olmasıdır.
-
-### D25 — Seçim geri alma ve kilit düşmesi
-Kullanıcı seçimini istediği zaman geri alabilir. Ayrıca telefon ~60 saniye boyunca sunucuya
-hiç uğramazsa (sayfa kapandı/ekran kilitlendi) o oturumun **ödenmemiş** seçimleri otomatik
-serbest bırakılır. Periyodik yenileme aynı zamanda "buradayım" sinyalidir; ayrı zamanlayıcı
-gerekmez. **Ödenmiş** seçimler asla serbest bırakılmaz (D13).
-
-### D26 — Kurulum ekranı: tanım ve koruma
-**Kurulum ekranı**, v1'de restoran/garson olmadığı için geliştiricinin kullandığı yönetim
-ekranıdır. Yaptıkları: masa oluştur · demo menüsünden tıklayarak ürün ekle · "örnek masa
-oluştur" · masayı ödemeye aç · masanın QR linkini al · masayı manuel kapat (D21 kaçış valfi).
-Müşteri sitesiyle **aynı alan adında** yayınlanır; bu yüzden **tek ortak şifre** ile korunur
-(ortam değişkeninde tanımlı, tek alanlı giriş). Kullanıcı hesabı/kayıt yoktur.
-Bu ekran, ileride restoran panelinin tohumudur.
-
-### D27 — Dil: yalnızca Türkçe
-v1 tek dil (Türkçe). Ancak **tüm arayüz metinleri tek bir dosyada toplanır**, koda gömülmez;
-böylece ileride İngilizce eklemek dosya kopyalamaya iner.
-
----
-
-## 8. Kararlar (Tur 5-6)
-
-### D28 — v1 ekran envanteri: 9 ekran
-Müşteri tarafı 6, kurulum tarafı 3. Tam liste `PRODUCT.md` bölüm 6'da.
-"Kişi sayısı" ve "masa kapandı" ekranları, ayrı ekran yerine hesap ekranının içinde birer
-durum olarak da tasarlanabilir (Design'ın takdirinde).
+### D28 — v1 screen inventory: 9 screens
+Six on the guest side, three on the admin side. Full list in PRODUCT.md section 6.
+"Number of people" and "bill fully paid" may be designed as states of the bill screen rather
+than separate screens.
 
 ### D29 — Stack: Next.js + Postgres + Vercel
-Tek kod tabanı (müşteri sitesi + kurulum ekranı), tek deploy, hazır HTTPS.
-Belirleyici kısıtlar: 3D Secure geri dönüşü herkese açık HTTPS adresi ister (localhost'ta
-arkadaş testi yapılamaz, v1 yayında olmak zorundadır); birden çok telefon aynı masayı
-paylaştığı için gerçek veritabanı şarttır.
+One codebase (guest site + admin console), one deploy, HTTPS out of the box.
+Deciding constraints: the 3D Secure return needs a public HTTPS URL (so the project must be
+live from day one; the friend test cannot run on localhost), and several phones sharing one
+table means a real database is mandatory.
 
-### D30 — Ödeme sağlayıcısı: iyzico (sandbox)
-Test hesabı e-posta ile açılır (`sandbox-merchant.iyzipay.com/auth/register`), API anahtarları
-panelden alınır, test kartlarıyla çalışılır — sandbox için şirket/üye işyeri başvurusu
-gerekmez. Gerçek paraya geçişte aynı sağlayıcıda kalınır.
-**Kural:** ödeme entegrasyonu kodda tek bir katmanın arkasında durur; sağlayıcı değişirse
-tek yer değişir.
+### D30 — Payment provider: iyzico (sandbox)
+Test account opened by email (`sandbox-merchant.iyzipay.com/auth/register`), API keys from the
+panel, test cards — no company or merchant application needed for sandbox. Moving to real money
+stays with the same provider.
+**Rule:** all payment code sits behind a single layer, so swapping providers touches one place.
 
-### D31 — Pay hesabı ve kuruş artığı (tek kural)
-> **Bir ödemenin tutarı = kalan bakiye ÷ kalan ödenmemiş pay sayısı (kuruşa yuvarlanır).
-> Son kalan pay, kalan bakiyenin tamamıdır.**
+### D31 — Share calculation and rounding remainder (single rule)
+> **Payment amount = remaining balance ÷ number of unpaid shares (rounded to the minor unit).
+> The last remaining share is the entire remaining balance.**
 
-Bu tek kural üç şeyi birden çözer: kuruş artığı (100 ÷ 3) hep son ödeyene gider ve masa
-mutlaka 0'a iner; adisyon ödeme sırasında büyürse paylar kendiliğinden yeniden hesaplanır;
-"kalanı ben ödeyeyim" bu kuralın özel halidir.
+One rule covers three things: the rounding remainder (100 ÷ 3) always lands on the last payer
+and the table always reaches zero; a bill that grows mid-payment recalculates shares by itself;
+"I'll cover the rest" is a special case of the same rule.
 
-### D32 — Bahşiş bakiyeden bağımsızdır
-Her ödeme iki ayrı sayı taşır: **hesaba giden tutar** ve **bahşiş**. Kalan bakiyeden yalnızca
-hesaba giden tutar düşülür. Masanın kapanması bahşişe bakmaz. Makbuzda ve kurulum ekranında
-ikisi ayrı görünür.
+### D32 — Tips are independent of the balance
+Every payment carries two separate numbers: **bill amount** and **tip**. Only the bill amount is
+deducted from the remaining balance. Table closing ignores tips. Both are shown separately on
+the receipt and in the admin console.
 
-### D33 — Ödeme doğrulaması sunucu tarafındadır
-> **Bir pay, yalnızca sunucu ödeme sağlayıcısından onay aldıktan sonra ödenmiş sayılır.**
+### D33 — Payment verification is server-side
+> **A share counts as paid only after the server confirms it with the payment provider.**
 
-Tarayıcıdan gelen sonuç yalnızca "git ve kontrol et" tetiğidir; tarayıcının sözüne güvenilmez.
-Kullanıcı 3D ekranından hiç dönmese bile pay doğru şekilde ödenmiş görünür ve masa kapanır.
+Anything returned by the browser is only a trigger to go and check. Even if the guest never
+returns from the 3D Secure page, the share resolves correctly and the table closes properly.
 
-### D34 — v1'de iade yok
-İade akışı v1 kapsamı dışıdır (sandbox'ta gerçek para akmıyor). Hatalı durumlarda masa
-kurulum ekranından manuel kapatılır (D21). Gerçek paraya geçişte iade + uyuşmazlık akışı
-ayrıca tasarlanacak — o noktada "kim iade edebilir" ciddi bir yetkilendirme tasarımı gerektirir.
+### D34 — No refunds in v1
+Refund flows are out of scope (no real money in sandbox). Mistakes are handled by closing the
+table manually (D21). When real money starts, refunds and disputes get designed separately — at
+which point "who is allowed to refund" becomes a serious authorization design.
+
+### D35 — Revenue model deferred; subscription remains the default
+D6 is now **provisional**. Pricing gets locked **after the first three restaurant conversations**;
+until then the default is a monthly subscription. Rationale: deciding price with zero restaurant
+conversations means copying competitors, not reading data.
+Note: of the known competitors one uses commission and one uses subscription, so subscription is
+not unproven in this market.
+
+### D36 — Positioning: deliberately narrow
+v1 stays payment-only (D2 upheld). But that is positioning, not a gap:
+
+> **"We don't change anything you do. We just delete the bill-closing round trip."**
+
+Competitors ask restaurants to change how they operate; this product does not, so the commitment
+asked for is smaller and "yes" is easier. **Ordering will definitely ship in v2** (pulled forward
+from v3), but the positioning message stays.
+
+### D37 — Defensibility: experience first, partnership later
+Priority is **experience**: POS vendors' DNA is back office, not front end — a genuinely good
+guest experience is the thing they cannot copy. That is already the v1 success criterion (D16).
+If the product gains attention later, **partnership**: position as the payment layer POS vendors
+do not want to build, rather than as their competitor.
 
 ---
 
-## 9. Rekabet ve konumlandırma (Tur 7)
+## 3. v1 design principle (explicit user requirement)
 
-### Bilinen rakipler (2026-08-11 itibarıyla)
+**The first version must be as simple as possible.** A solo developer testing with friends; if
+they find it easy and comfortable, the next step is talking to restaurants. Therefore the
+default answer to any feature question is "not in v1", and the burden of proof is on including it.
 
-| Rakip | Ne yapıyor | Gelir modeli |
+---
+
+## 4. Competition (as of 2026-08-11)
+
+| Competitor | What they do | Revenue model |
 |---|---|---|
-| **HesApp** | QR hesap bölüşme/ödeme. ~2 ay önce kurulmuş, görünürlüğü düşük. | **%1,75 işlem komisyonu** |
-| **Alman Hesabı** (almanhesabi.com) | QR'dan **sipariş + hesap bölme**. Basın görünürlüğü var. | **Abonelik** (2.500-5.000 TL bandında fiyat çıpası) |
-| **QRPay** (qrpaytr.com) | **Neredeyse birebir aynı konum**: sabit masa QR'ı, eşit/kalem/özel tutar bölüşme, POS'tan bağımsız. Aynı satış argümanları (masa devir hızı, bahşiş). | Bilinmiyor |
-| **HesapPOS, YemeQr, Tabpad, Meniyo vb.** | POS ve QR menü şirketleri; hesap bölme ve QR menü zaten var. | — |
+| **HesApp** | QR bill splitting/payment. Founded ~2 months ago, low visibility. | **1.75% transaction commission** |
+| **Alman Hesabı** (almanhesabi.com) | QR **ordering + bill splitting**. Has press coverage. | **Subscription** (2,500–5,000 TL price anchor) |
+| **QRPay** (qrpaytr.com) | **Near-identical positioning**: permanent table QR, equal/per-item/custom-amount splitting, POS-independent. Same sales arguments (table turnover, tips). | Unknown |
+| **HesapPOS, YemeQr, Tabpad, Meniyo, …** | POS and QR-menu vendors; bill splitting and QR menus already exist. | — |
 
-**Okuma:** Pazar iki rakipli genç bir pazar değil, **kalabalık**. Rakiplerin varlığı kötü haber
-değil (problemin gerçek olduğunun kanıtı), ama iki gerçeği kabul etmek gerekiyor:
-1. Kimse henüz kazanmadı — hepsi web sitesi aşamasında görünüyor.
-2. **Asıl tehdit startup'lar değil, POS firmaları.** Adisyo/Simpra/HesapPOS bunu bir çeyrekte
-   özellik olarak ekleyip POS'un yanında bedava verebilir.
+**Reading:** this is not a young two-competitor market, it is a **crowded** one. Competitors
+existing is not bad news (it proves the problem is real), but two things must be accepted:
+1. Nobody has won yet — they all appear to be at the website stage.
+2. **The real threat is not the startups, it is the POS vendors.** Adisyo/Simpra/HesapPOS could
+   ship this as a feature in a quarter and bundle it free with the POS.
 
-**Yapılacak (kod yazmadan önce, ~2 gün):** bu rakipleri **gerçekten kullanan restoran var mı**
-öğren (referans, mekân fotoğrafı, Instagram etiketi, Google yorumu). Web sitesi olan şirket
-ile para kazanan şirket farklı şeylerdir. Bu bilgi fiyat kararını doğrudan etkiler.
-
-### D35 — Gelir modeli kararı ertelendi, varsayılan abonelik
-D6 **geçici** statüye alındı. Fiyat kararı **ilk 3 restoran görüşmesinden sonra** kilitlenecek;
-o zamana kadar varsayılan aylık abonelik. Gerekçe: elde tek bir restoran görüşmesi yokken
-fiyat kararı veriye değil rakip taklidine dayanır.
-Not: rakiplerden biri komisyon, biri abonelik kullanıyor — abonelik modeli pazarda kanıtsız değil.
-
-### D36 — Konumlandırma: kasıtlı olarak dar
-v1 sadece ödeme olarak kalıyor (D2 korundu). Ama bu bir eksiklik değil, **konumlandırma**:
-
-> **"Hiçbir şeyinizi değiştirmiyoruz. Sadece hesap kapatma turunu siliyoruz."**
-
-Rakipler restoranın operasyonunu değiştirmesini istiyor; bu ürün istemiyor. Restorandan
-istenen taahhüt küçük olduğu için "evet" alması daha kolay.
-**Sipariş özelliği v2'de kesin olarak yapılacak** (v3'ten öne alındı), ama konumlandırma
-mesajı değişmeyecek.
-
-### D37 — Savunulabilirlik: önce deneyim, sonra ortaklık
-Öncelik **(b) deneyim**: POS firmalarının DNA'sı arka ofis, ön yüz değil — kopyalayamayacakları
-tek şey gerçekten iyi bir müşteri deneyimi. v1'in başarı kriteri (D16) zaten budur.
-İleride dikkat çekilirse **(c) ortaklık**: POS firmalarına rakip değil, onların yapmak
-istemediği **ödeme katmanı** olarak konumlanmak.
+**To do before writing code (~2 days):** find out whether these competitors have **any real
+restaurants using them** (references, venue photos, Instagram tags, Google reviews). A company
+with a website and a company earning revenue are different things. This directly affects the
+pricing decision.
 
 ---
 
-## 10. Durum
+## 5. Status
 
-**Açık soru kalmadı.** Ürün tanımı `PRODUCT.md`, tasarım isteği `DESIGN-BRIEF.md` dosyalarında.
-v1 planı rekabet bilgisinden etkilenmedi — değişen tek şey yol haritası (sipariş v3→v2) ve
-konumlandırma mesajı.
+**No open questions.** The product definition lives in `PRODUCT.md`, the design request in
+`DESIGN-BRIEF.md`, and the work breakdown in `issues/`.
