@@ -26,9 +26,8 @@ T01'den itibaren her şey bunlara bağlı. Ayrıca iyzico tarafında beklenmedik
 ### 2. Vercel hesabı
 - `vercel.com` üzerinden GitHub hesabınla kayıt ol (ücretsiz plan yeterli).
 
-### 3. GitHub deposu
-- GitHub'da `restoran-qr-odeme` adında **private** bir depo aç.
-- Deponun adresini not et (T01'de bu yerel repo oraya bağlanacak).
+### 3. GitHub deposu — ✅ HAZIR, bir şey yapmana gerek yok
+`https://github.com/eray-eroglu/restoran-qr-odeme` (private) açıldı ve belgeler gönderildi.
 
 ### 4. Veritabanı
 - `neon.tech` veya `supabase.com` üzerinden ücretsiz bir Postgres veritabanı oluştur.
@@ -46,7 +45,6 @@ T01'den itibaren her şey bunlara bağlı. Ayrıca iyzico tarafında beklenmedik
 IYZICO_API_KEY=...
 IYZICO_SECRET_KEY=...
 DATABASE_URL=...
-GitHub depo adresi: ...
 ```
 
 Bu değerleri T01'e başlarken hazır bulundur. **Bunları sohbete yapıştırma** — T01'de
@@ -58,5 +56,5 @@ Bu değerleri T01'e başlarken hazır bulundur. **Bunları sohbete yapıştırma
 
 - [ ] iyzico sandbox paneline giriş yapabiliyorum ve API anahtarlarım elimde
 - [ ] Vercel hesabım var
-- [ ] Boş bir GitHub deposu var
+- [x] GitHub deposu hazır
 - [ ] Postgres bağlantı adresim elimde
