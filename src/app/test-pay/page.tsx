@@ -1,6 +1,9 @@
 'use client'
 // T03 — Payment vertical slice test page.
-// Fixed 1.00 TL amount; no design polish; proves the 3DS flow works end-to-end.
+// Fixed 1.00 TL amount; proves the 3DS flow end-to-end.
+//
+// Form posts directly to /api/test-pay/initiate (no fetch + document.write).
+// The browser navigates naturally: API returns 3DS HTML → browser renders it.
 
 import { useState, useRef } from 'react'
 
@@ -11,41 +14,7 @@ const TEST_CARDS = [
 
 export default function TestPayPage() {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    const form = e.currentTarget
-    const formData = new FormData(form)
-
-    try {
-      const res = await fetch('/api/test-pay/initiate', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (res.redirected) {
-        // initiation failed — already redirected to result page
-        window.location.href = res.url
-        return
-      }
-
-      const html = await res.text()
-
-      // Write the 3DS HTML into the document — it auto-submits to the bank.
-      // This is the standard pattern for iyzico 3DS integration.
-      document.open()
-      document.write(html)
-      document.close()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Beklenmedik hata')
-      setLoading(false)
-    }
-  }
 
   function fillCard(card: (typeof TEST_CARDS)[number]) {
     if (!formRef.current) return
@@ -85,7 +54,17 @@ export default function TestPayPage() {
           ))}
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/*
+          action="/api/test-pay/initiate": API returns 3DS HTML → browser renders it.
+          No fetch/document.write — plain navigation is more reliable.
+        */}
+        <form
+          ref={formRef}
+          method="POST"
+          action="/api/test-pay/initiate"
+          onSubmit={() => setLoading(true)}
+          className="flex flex-col gap-3"
+        >
           <input
             name="cardHolderName"
             placeholder="Kart sahibinin adı"
@@ -127,12 +106,6 @@ export default function TestPayPage() {
               className="w-[90px] h-[52px] border-2 border-brand-black rounded-lg px-4 text-[17px] text-brand-black placeholder:text-brand-grey-light focus:outline-none bg-white"
             />
           </div>
-
-          {error && (
-            <p className="text-[14px] text-brand-grey-dark border border-brand-border rounded-lg px-3 py-2 bg-white">
-              Hata: {error}
-            </p>
-          )}
 
           <button
             type="submit"
