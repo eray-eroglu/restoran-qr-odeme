@@ -51,9 +51,6 @@ export default async function GuestPage({ params }: Props) {
   if (!bill) {
     return (
       <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto justify-end gap-3.5 px-6 pb-10">
-        <div className="h-[120px] border-2 border-dashed border-brand-border rounded-xl flex items-center justify-center text-base text-brand-grey-mid">
-          — boş —
-        </div>
         <p className="text-[26px] leading-snug text-brand-black">{s.noOpenBill}</p>
         <p className="text-base text-brand-grey-mid">
           {table.name} · {s.askServer}
