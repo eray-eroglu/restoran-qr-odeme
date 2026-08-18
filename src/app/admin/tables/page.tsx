@@ -28,7 +28,7 @@ async function getTablesWithBills() {
           items: { select: { priceKurus: true } },
           payments: {
             where: { status: 'SUCCEEDED' },
-            select: { amountKurus: true },
+            select: { amountKurus: true, tipKurus: true },
           },
         },
       },
@@ -44,16 +44,18 @@ async function getTablesWithBills() {
         ? 'open'
         : 'closed'
 
-    // Amounts in kuruş → TL for display helpers
-    const totalKurus = bill ? bill.items.reduce((s, i) => s + i.priceKurus, 0) : null
-    const paidKurus = bill ? bill.payments.reduce((s, p) => s + p.amountKurus, 0) : null
+    // Amounts in kuruş → TL for display helpers (R3: tips separate from balance)
+    const totalKurus   = bill ? bill.items.reduce((s, i) => s + i.priceKurus,  0) : null
+    const paidKurus    = bill ? bill.payments.reduce((s, p) => s + p.amountKurus, 0) : null
+    const tipKurus     = bill ? bill.payments.reduce((s, p) => s + p.tipKurus,    0) : null
 
     return {
       id: table.id,
       name: table.name,
       status,
       totalAmount: totalKurus !== null ? totalKurus / 100 : null,
-      paidAmount: paidKurus !== null ? paidKurus / 100 : null,
+      paidAmount:  paidKurus  !== null ? paidKurus  / 100 : null,
+      tipAmount:   tipKurus   !== null ? tipKurus   / 100 : null,
       mode: bill ? displayMode(bill.mode) : null,
       billId: bill?.id ?? null,
     }
@@ -87,6 +89,11 @@ function TableRow({
       </td>
       <td className="px-5 py-4 text-[17px] text-brand-grey-dark">
         {table.paidAmount !== null ? formatTLNoUnit(table.paidAmount) : '—'}
+      </td>
+      <td className="px-5 py-4 text-[17px] text-brand-grey-dark">
+        {table.tipAmount !== null && table.tipAmount > 0
+          ? formatTLNoUnit(table.tipAmount)
+          : '—'}
       </td>
       <td className="px-5 py-4 text-[17px] text-brand-grey-dark">
         {remaining !== null ? formatTLNoUnit(remaining) : '—'}
@@ -124,7 +131,7 @@ function TableHead({ s }: { s: typeof strings.admin.tables }) {
   return (
     <thead>
       <tr className="bg-brand-surface border-b-2 border-brand-black">
-        {[s.colTable, s.colTotal, s.colPaid, s.colRemaining, s.colMode, s.colActions].map((col) => (
+        {[s.colTable, s.colTotal, s.colPaid, s.colTip, s.colRemaining, s.colMode, s.colActions].map((col) => (
           <th
             key={col}
             className="text-left px-5 py-3 text-sm font-medium tracking-wider text-brand-grey-mid uppercase"
@@ -163,7 +170,7 @@ export default async function AdminTablesPage() {
             <tbody>
               {activeTables.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-brand-grey-mid">
+                  <td colSpan={7} className="px-5 py-12 text-center text-brand-grey-mid">
                     {s.noTables}
                   </td>
                 </tr>

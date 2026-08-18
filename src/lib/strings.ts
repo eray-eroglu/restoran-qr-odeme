@@ -134,6 +134,7 @@ export const strings = {
       colTable: 'Masa',
       colTotal: 'Toplam',
       colPaid: 'Ödenen',
+      colTip: 'Bahşiş',
       colRemaining: 'Kalan',
       colMode: 'Mod',
       colActions: 'İşlemler',

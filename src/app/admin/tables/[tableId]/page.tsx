@@ -55,9 +55,11 @@ export default async function AdminTableDetailPage({ params }: Props) {
 
   // Derive totals from bill items / payments (all in kuruş)
   // R3: only bill share (amountKurus) counts toward balance — tips excluded from remaining
-  const totalKurus     = bill ? bill.items.reduce((s, i) => s + i.priceKurus, 0) : 0
-  const paidKurus      = bill ? bill.payments.reduce((s, p) => s + p.amountKurus, 0) : 0
-  const remainingKurus = totalKurus - paidKurus
+  const totalKurus        = bill ? bill.items.reduce((s, i) => s + i.priceKurus, 0) : 0
+  const paidKurus         = bill ? bill.payments.reduce((s, p) => s + p.amountKurus, 0) : 0
+  const totalTipKurus     = bill ? bill.payments.reduce((s, p) => s + p.tipKurus,    0) : 0
+  const totalCollectedKurus = paidKurus + totalTipKurus  // what actually hit the terminal
+  const remainingKurus    = totalKurus - paidKurus
 
   // Derive bill status label
   const statusLabel = !hasBill ? 'hesap yok' : 'açık'
@@ -183,13 +185,25 @@ export default async function AdminTableDetailPage({ params }: Props) {
             {hasBill ? (
               <>
                 <div className="flex justify-between text-[17px] text-brand-grey-dark">
-                  <span>Toplam</span>
+                  <span>Hesap toplamı</span>
                   <span>{formatTL(totalKurus / 100)}</span>
                 </div>
                 <div className="flex justify-between text-[17px] text-brand-grey-dark">
-                  <span>Ödenen</span>
+                  <span>Ödenen (hesap)</span>
                   <span>{formatTL(paidKurus / 100)}</span>
                 </div>
+                {totalTipKurus > 0 && (
+                  <div className="flex justify-between text-[17px] text-brand-grey-dark">
+                    <span>Bahşiş</span>
+                    <span>{formatTL(totalTipKurus / 100)}</span>
+                  </div>
+                )}
+                {totalTipKurus > 0 && (
+                  <div className="flex justify-between text-[17px] text-brand-black">
+                    <span>Toplam tahsilat</span>
+                    <span>{formatTL(totalCollectedKurus / 100)}</span>
+                  </div>
+                )}
                 <div className="pt-3 border-t border-brand-border flex justify-between text-[19px] text-brand-black font-medium">
                   <span>Kalan</span>
                   <span>{formatTL(remainingKurus / 100)}</span>
