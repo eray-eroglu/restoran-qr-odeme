@@ -71,9 +71,19 @@ export async function POST(request: NextRequest) {
       return failHtml('Hesap bulunamadı veya kapalı.')
     }
 
-    const totalKurus  = bill.items.reduce((s, i) => s + i.priceKurus, 0)
-    const paidKurus   = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
-    const amountKurus = totalKurus - paidKurus
+    const totalKurus     = bill.items.reduce((s, i) => s + i.priceKurus, 0)
+    const paidKurus      = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
+    const remainingKurus = totalKurus - paidKurus
+
+    // R2 (server-side, R8 — never trust client amount): for EQUAL_SPLIT,
+    // compute this guest's share. Non-last shares = floor(remaining / unpaid);
+    // last share = full remaining so the bill reaches exactly 0.
+    let amountKurus = remainingKurus
+    if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
+      const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
+      const isLast = unpaid === 1
+      amountKurus  = isLast ? remainingKurus : Math.floor(remainingKurus / unpaid)
+    }
 
     if (amountKurus <= 0) return failHtml('Ödeme gereken tutar 0.')
 

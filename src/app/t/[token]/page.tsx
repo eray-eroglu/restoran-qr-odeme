@@ -138,10 +138,13 @@ export default async function GuestPage({ params, searchParams }: Props) {
               >
                 {s.payFull}
               </a>
-              {/* Split equally — T09 (not yet available) */}
-              <div className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 opacity-40 cursor-not-allowed">
+              {/* Split equally — T09 */}
+              <a
+                href={`/t/${token}/split`}
+                className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 active:bg-brand-surface transition-colors"
+              >
                 {s.splitEqual}
-              </div>
+              </a>
               {/* Pick my items — T10 (not yet available) */}
               <div className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 opacity-40 cursor-not-allowed">
                 {s.selectItems}
@@ -164,11 +167,14 @@ export default async function GuestPage({ params, searchParams }: Props) {
                 {s.progressRemaining(formatTLNoUnit(remainingKurus / 100))}
               </span>
             </div>
-            {/* Pay button — T08 will wire this up */}
-            <div className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 cursor-pointer active:opacity-80 transition-opacity">
+            {/* Pay my share — wired T08/T09 */}
+            <a
+              href={`/t/${token}/pay`}
+              className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
+            >
               <span className="text-[26px]">{s.payMyShare}</span>
               <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
-            </div>
+            </a>
           </>
         )}
       </div>

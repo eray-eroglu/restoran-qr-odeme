@@ -47,9 +47,19 @@ export default async function PayPage({ params }: Props) {
     )
   }
 
-  const totalKurus  = bill.items.reduce((s, i) => s + i.priceKurus, 0)
-  const paidKurus   = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
-  const amountKurus = totalKurus - paidKurus
+  const totalKurus     = bill.items.reduce((s, i) => s + i.priceKurus, 0)
+  const paidKurus      = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
+  const remainingKurus = totalKurus - paidKurus
+
+  // R2: For EQUAL_SPLIT, each person pays Math.floor(remaining / unpaidShares);
+  // the last person pays the full remaining (no rounding loss).
+  let amountKurus = remainingKurus
+  if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
+    const successCount = bill.payments.length
+    const unpaid       = Math.max(1, bill.splitPeople - successCount)
+    const isLast       = unpaid === 1
+    amountKurus = isLast ? remainingKurus : Math.floor(remainingKurus / unpaid)
+  }
 
   if (amountKurus <= 0) {
     // Nothing left to pay
