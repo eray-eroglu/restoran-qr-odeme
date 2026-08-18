@@ -16,6 +16,7 @@ import { prisma } from '@/lib/db'
 import { strings, formatTL, formatTLNoUnit } from '@/lib/strings'
 import ProgressBar from '@/components/ProgressBar'
 import Poller from './Poller'
+import { setByItemMode } from './items/actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,14 +71,15 @@ export default async function GuestPage({ params, searchParams }: Props) {
   const paidKurus = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
   const remainingKurus = totalKurus - paidKurus
 
-  const hasMode = bill.mode !== 'NONE'
+  const hasMode    = bill.mode !== 'NONE'
   const isEqualSplit = bill.mode === 'EQUAL_SPLIT'
+  const isByItem     = bill.mode === 'BY_ITEM'
 
   // For EQUAL_SPLIT: each succeeded payment = one share paid
   const splitPaidCount = bill.payments.length
-  const splitPeople = bill.splitPeople ?? 1
-  const unpaidPeople = Math.max(1, splitPeople - splitPaidCount)
-  const shareKurus = isEqualSplit ? Math.ceil(remainingKurus / unpaidPeople) : remainingKurus
+  const splitPeople    = bill.splitPeople ?? 1
+  const unpaidPeople   = Math.max(1, splitPeople - splitPaidCount)
+  const shareKurus     = isEqualSplit ? Math.ceil(remainingKurus / unpaidPeople) : remainingKurus
 
   // ── S1-b / S1-c: Open bill ───────────────────────────────────────────────
   return (
@@ -90,6 +92,8 @@ export default async function GuestPage({ params, searchParams }: Props) {
         <span className="text-base text-brand-grey-mid">
           {hasMode && isEqualSplit && bill.splitPeople
             ? s.equalSplitMode(bill.splitPeople)
+            : isByItem
+            ? s.byItemMode
             : s.itemCount(bill.items.length)}
         </span>
       </div>
@@ -145,10 +149,17 @@ export default async function GuestPage({ params, searchParams }: Props) {
               >
                 {s.splitEqual}
               </a>
-              {/* Pick my items — T10 (not yet available) */}
-              <div className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 opacity-40 cursor-not-allowed">
-                {s.selectItems}
-              </div>
+              {/* Pick my items — T10 */}
+              <form action={setByItemMode} className="flex-1">
+                <input type="hidden" name="billId"     value={bill.id} />
+                <input type="hidden" name="tableToken" value={token} />
+                <button
+                  type="submit"
+                  className="w-full h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 active:bg-brand-surface transition-colors"
+                >
+                  {s.selectItems}
+                </button>
+              </form>
             </div>
           </>
         ) : (
@@ -167,14 +178,26 @@ export default async function GuestPage({ params, searchParams }: Props) {
                 {s.progressRemaining(formatTLNoUnit(remainingKurus / 100))}
               </span>
             </div>
-            {/* Pay my share — wired T08/T09 */}
-            <a
-              href={`/t/${token}/pay`}
-              className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
-            >
-              <span className="text-[26px]">{s.payMyShare}</span>
-              <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
-            </a>
+
+            {isByItem ? (
+              // BY_ITEM: link to item selection screen
+              <a
+                href={`/t/${token}/items`}
+                className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
+              >
+                <span className="text-[26px]">{s.selectItems}</span>
+                <span className="text-[15px] opacity-70">{s.byItemHint}</span>
+              </a>
+            ) : (
+              // EQUAL_SPLIT: pay my share directly
+              <a
+                href={`/t/${token}/pay`}
+                className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
+              >
+                <span className="text-[26px]">{s.payMyShare}</span>
+                <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
+              </a>
+            )}
           </>
         )}
       </div>

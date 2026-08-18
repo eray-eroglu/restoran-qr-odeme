@@ -61,13 +61,33 @@ async function handleRealPayment(
         data: { status: 'SUCCEEDED', providerPaymentId: iyzicoPaymentId },
       })
 
-      // ── Mark all currently unpaid bill items as paid ───────────────────
-      const unpaidItems = payment.bill.items.filter((i) => !i.isPaid)
-      if (unpaidItems.length > 0) {
-        await prisma.billItem.updateMany({
-          where: { id: { in: unpaidItems.map((i) => i.id) } },
-          data: { isPaid: true, paymentId: payment.id },
+      // ── Mark paid items — behaviour differs by split mode ─────────────
+      if (payment.bill.mode === 'BY_ITEM' && payment.sessionId) {
+        // BY_ITEM: only this session's locked (unpaid) items
+        const myLocks = await prisma.itemLock.findMany({
+          where: { billId: payment.billId, sessionId: payment.sessionId, isPaid: false },
         })
+        if (myLocks.length > 0) {
+          const lockItemIds = myLocks.map((l) => l.billItemId)
+          await prisma.billItem.updateMany({
+            where: { id: { in: lockItemIds } },
+            data: { isPaid: true, paymentId: payment.id },
+          })
+          // Mark the locks as permanently paid (not subject to R7 stale cleanup)
+          await prisma.itemLock.updateMany({
+            where: { billItemId: { in: lockItemIds } },
+            data: { isPaid: true },
+          })
+        }
+      } else {
+        // NONE (whole bill) or EQUAL_SPLIT: mark all currently unpaid items
+        const unpaidItems = payment.bill.items.filter((i) => !i.isPaid)
+        if (unpaidItems.length > 0) {
+          await prisma.billItem.updateMany({
+            where: { id: { in: unpaidItems.map((i) => i.id) } },
+            data: { isPaid: true, paymentId: payment.id },
+          })
+        }
       }
 
       // ── Auto-close bill if fully paid (R1) ────────────────────────────

@@ -2,6 +2,7 @@
 // Amount is computed server-side from DB (R8 — never trusted from client).
 // Form POSTs directly to /api/payment/initiate which returns the bank's 3DS HTML.
 
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { strings, formatTL } from '@/lib/strings'
@@ -29,6 +30,7 @@ export default async function PayPage({ params }: Props) {
         include: {
           items: { select: { priceKurus: true } },
           payments: { where: { status: 'SUCCEEDED' }, select: { amountKurus: true } },
+          locks: { include: { session: { select: { token: true } } } },
         },
       },
     },
@@ -51,14 +53,29 @@ export default async function PayPage({ params }: Props) {
   const paidKurus      = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
   const remainingKurus = totalKurus - paidKurus
 
-  // R2: For EQUAL_SPLIT, each person pays Math.floor(remaining / unpaidShares);
-  // the last person pays the full remaining (no rounding loss).
+  // R2 + R8: compute amount server-side, never trust client
   let amountKurus = remainingKurus
+
   if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
-    const successCount = bill.payments.length
-    const unpaid       = Math.max(1, bill.splitPeople - successCount)
-    const isLast       = unpaid === 1
-    amountKurus = isLast ? remainingKurus : Math.floor(remainingKurus / unpaid)
+    // R2: Math.floor for non-last; last pays full remaining
+    const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
+    amountKurus  = unpaid === 1 ? remainingKurus : Math.floor(remainingKurus / unpaid)
+  } else if (bill.mode === 'BY_ITEM') {
+    // BY_ITEM: amount = sum of locked (unpaid) items for this session
+    const cookieStore = await cookies()
+    const guestToken  = cookieStore.get('guest_session')?.value ?? null
+    const mySession   = guestToken
+      ? await prisma.session.findUnique({ where: { token: guestToken } })
+      : null
+    if (mySession) {
+      const myLocks = await prisma.itemLock.findMany({
+        where: { billId: bill.id, sessionId: mySession.id, isPaid: false },
+        include: { billItem: { select: { priceKurus: true } } },
+      })
+      amountKurus = myLocks.reduce((s, l) => s + l.billItem.priceKurus, 0)
+    } else {
+      amountKurus = 0
+    }
   }
 
   if (amountKurus <= 0) {

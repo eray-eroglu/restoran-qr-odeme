@@ -29,6 +29,8 @@ export const strings = {
     payRest: 'Kalanı ben ödeyeyim',
     modeSelected: 'eşit böl modu seçildi · değiştirilemez',
     equalSplitMode: (n: number) => `eşit böl · ${n} kişi`,
+    byItemMode: 'kendi ürünlerimi seç modu',
+    byItemHint: 'ürün seç ve öde',
   },
 
   // E2 — Equal split person count

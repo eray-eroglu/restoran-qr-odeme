@@ -24,9 +24,10 @@ const POLL_MS = 5_000
 
 type Props = {
   billId: string | null // null = no open bill on this table
+  intervalMs?: number   // default 5000; use 1500 on the item-selection screen (D24/T10)
 }
 
-export default function Poller({ billId }: Props) {
+export default function Poller({ billId, intervalMs = POLL_MS }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
 
@@ -53,8 +54,8 @@ export default function Poller({ billId }: Props) {
     // Immediate first ping
     ping()
 
-    // Interval (≈5 s)
-    const interval = setInterval(ping, POLL_MS)
+    // Interval (≈5 s default, ≈1.5 s on item-selection screen)
+    const interval = setInterval(ping, intervalMs)
 
     // Refresh on tab refocus
     function onVisibility() {
@@ -67,7 +68,8 @@ export default function Poller({ billId }: Props) {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [billId]) // restart if billId changes (admin opens a bill while guest watches)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billId, intervalMs]) // restart if billId or interval changes
 
   return null
 }

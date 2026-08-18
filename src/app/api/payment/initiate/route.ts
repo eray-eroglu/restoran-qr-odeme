@@ -75,18 +75,6 @@ export async function POST(request: NextRequest) {
     const paidKurus      = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
     const remainingKurus = totalKurus - paidKurus
 
-    // R2 (server-side, R8 — never trust client amount): for EQUAL_SPLIT,
-    // compute this guest's share. Non-last shares = floor(remaining / unpaid);
-    // last share = full remaining so the bill reaches exactly 0.
-    let amountKurus = remainingKurus
-    if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
-      const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
-      const isLast = unpaid === 1
-      amountKurus  = isLast ? remainingKurus : Math.floor(remainingKurus / unpaid)
-    }
-
-    if (amountKurus <= 0) return failHtml('Ödeme gereken tutar 0.')
-
     // ── Find/create guest session ─────────────────────────────────────────
     let sessionId: string | null = null
     const guestToken = request.cookies.get('guest_session')?.value
@@ -94,6 +82,24 @@ export async function POST(request: NextRequest) {
       const session = await prisma.session.findUnique({ where: { token: guestToken } })
       if (session && session.billId === billId) sessionId = session.id
     }
+
+    // R2 + R8 (server-side — never trust client amount)
+    let amountKurus = remainingKurus
+
+    if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
+      const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
+      amountKurus  = unpaid === 1 ? remainingKurus : Math.floor(remainingKurus / unpaid)
+    } else if (bill.mode === 'BY_ITEM') {
+      // Amount = sum of locked (unpaid) items for this session
+      if (!sessionId) return failHtml('Oturum bulunamadı.')
+      const myLocks = await prisma.itemLock.findMany({
+        where: { billId, sessionId, isPaid: false },
+        include: { billItem: { select: { priceKurus: true } } },
+      })
+      amountKurus = myLocks.reduce((s, l) => s + l.billItem.priceKurus, 0)
+    }
+
+    if (amountKurus <= 0) return failHtml('Seçili ürün yok veya ödeme gereken tutar 0.')
 
     // ── Create Payment(PENDING) in DB ─────────────────────────────────────
     const payment = await prisma.payment.create({
