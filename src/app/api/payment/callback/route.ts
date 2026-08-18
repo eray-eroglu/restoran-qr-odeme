@@ -1,97 +1,190 @@
-// T03 — 3D Secure callback handler.
+// T08 — 3D Secure callback handler (updated from T03).
 //
-// iyzico redirects the browser here after 3DS. In sandbox (and some live banks)
-// this arrives as a GET redirect with query params; in others as a POST with form data.
-// We handle both — but in both cases the server verifies status with iyzico (R8).
+// Lookup flow:
+//   1. Find Payment record in DB by conversationId.
+//   2. If found (T08 real payment): verify with iyzico → update DB → redirect.
+//   3. If NOT found (T03 test payment): fall back to old test-pay result page.
+//
+// R8: Verification is always server-side — we ask iyzico for truth,
+//     never trusting params that arrived from the browser.
+// R1: After SUCCEEDED: sum all paid amounts; if ≥ total → close bill automatically.
 
 import { type NextRequest } from 'next/server'
 import { verify3DS } from '@/lib/iyzico'
+import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-function makeResultUrl(origin: string, params: Record<string, string>) {
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function testResultUrl(origin: string, params: Record<string, string>) {
   const u = new URL('/test-pay/result', origin)
   Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v))
   return u.toString()
 }
 
-async function handleCallback(
+async function handleRealPayment(
   origin: string,
-  paymentId: string,
+  dbPaymentId: string,
+  iyzicoPaymentId: string,
   conversationId: string,
   conversationData: string,
 ) {
-  if (!paymentId || !conversationId) {
-    console.error('[T03] callback: missing paymentId or conversationId')
-    return Response.redirect(
-      makeResultUrl(origin, { status: 'failure', error: 'Geçersiz callback — ödeme ID eksik' }),
-      303,
-    )
+  // Fetch payment with its bill + items + table
+  const payment = await prisma.payment.findUnique({
+    where: { id: dbPaymentId },
+    include: {
+      bill: {
+        include: {
+          items: true,
+          payments: { where: { status: 'SUCCEEDED' } },
+          table: { select: { token: true } },
+        },
+      },
+    },
+  })
+
+  if (!payment) {
+    return Response.redirect(testResultUrl(origin, { status: 'failure', error: 'Ödeme kaydı bulunamadı' }), 303)
   }
 
+  const tableToken = payment.bill.table.token
+
   try {
-    const result = await verify3DS({ conversationId, paymentId, conversationData })
-    console.log('[T03] verify result:', JSON.stringify(result))
+    const result = await verify3DS({ conversationId, paymentId: iyzicoPaymentId, conversationData })
+    console.log('[T08] verify result:', JSON.stringify(result))
 
     if (result.status === 'success') {
+      // ── Mark payment as SUCCEEDED ──────────────────────────────────────
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: 'SUCCEEDED', providerPaymentId: iyzicoPaymentId },
+      })
+
+      // ── Mark all currently unpaid bill items as paid ───────────────────
+      const unpaidItems = payment.bill.items.filter((i) => !i.isPaid)
+      if (unpaidItems.length > 0) {
+        await prisma.billItem.updateMany({
+          where: { id: { in: unpaidItems.map((i) => i.id) } },
+          data: { isPaid: true, paymentId: payment.id },
+        })
+      }
+
+      // ── Auto-close bill if fully paid (R1) ────────────────────────────
+      const allItems = await prisma.billItem.findMany({
+        where: { billId: payment.billId },
+        select: { priceKurus: true },
+      })
+      const successPayments = await prisma.payment.aggregate({
+        where: { billId: payment.billId, status: 'SUCCEEDED' },
+        _sum: { amountKurus: true },
+      })
+
+      const totalKurus = allItems.reduce((s, i) => s + i.priceKurus, 0)
+      const paidKurus  = successPayments._sum.amountKurus ?? 0
+
+      if (paidKurus >= totalKurus) {
+        await prisma.bill.update({
+          where: { id: payment.billId },
+          data: { status: 'CLOSED', closedAt: new Date() },
+        })
+      }
+
+      // ── Redirect to permanent receipt ─────────────────────────────────
+      return Response.redirect(new URL(`/receipt/${payment.id}`, origin).toString(), 303)
+    }
+
+    // ── Payment failed ─────────────────────────────────────────────────────
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: 'FAILED' },
+    })
+
+    const failUrl = new URL(`/t/${tableToken}`, origin)
+    failUrl.searchParams.set('payFailed', '1')
+    failUrl.searchParams.set('error', result.errorMessage ?? 'Ödeme reddedildi')
+    return Response.redirect(failUrl.toString(), 303)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[T08] verify error:', message)
+
+    // Mark as failed on exception too
+    await prisma.payment.update({ where: { id: payment.id }, data: { status: 'FAILED' } }).catch(() => {})
+
+    const failUrl = new URL(`/t/${tableToken}`, origin)
+    failUrl.searchParams.set('payFailed', '1')
+    failUrl.searchParams.set('error', message)
+    return Response.redirect(failUrl.toString(), 303)
+  }
+}
+
+// ── Main handler (shared by GET and POST) ─────────────────────────────────────
+
+async function handleCallback(
+  origin: string,
+  iyzicoPaymentId: string,
+  conversationId: string,
+  conversationData: string,
+) {
+  if (!iyzicoPaymentId || !conversationId) {
+    return new Response('OK', { status: 200 })
+  }
+
+  // The conversationId we set is always the DB Payment.id
+  const dbPayment = await prisma.payment.findUnique({ where: { id: conversationId } }).catch(() => null)
+
+  if (dbPayment) {
+    // T08 real payment flow
+    return handleRealPayment(origin, dbPayment.id, iyzicoPaymentId, conversationId, conversationData)
+  }
+
+  // T03 test-pay flow (no DB record) — fall back to old behavior
+  try {
+    const result = await verify3DS({ conversationId, paymentId: iyzicoPaymentId, conversationData })
+    if (result.status === 'success') {
       return Response.redirect(
-        makeResultUrl(origin, { status: 'success', paymentId: result.paymentId ?? paymentId }),
+        testResultUrl(origin, { status: 'success', paymentId: result.paymentId ?? iyzicoPaymentId }),
         303,
       )
     }
-
     return Response.redirect(
-      makeResultUrl(origin, {
+      testResultUrl(origin, {
         status: 'failure',
         error: result.errorMessage ?? 'Ödeme reddedildi',
-        code: result.errorCode ?? '',
+        code:  result.errorCode ?? '',
       }),
       303,
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[T03] verify error:', message)
-    return Response.redirect(
-      makeResultUrl(origin, { status: 'failure', error: `Doğrulama hatası: ${message}` }),
-      303,
-    )
+    return Response.redirect(testResultUrl(origin, { status: 'failure', error: message }), 303)
   }
 }
 
-// iyzico sandbox redirects the browser via GET with query params.
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url)
+  const url    = new URL(request.url)
   const origin = url.origin
-
-  const paymentId      = url.searchParams.get('paymentId') ?? ''
-  const conversationId = url.searchParams.get('conversationId') ?? ''
-  const conversationData = url.searchParams.get('conversationData') ?? ''
-
-  // No payment params → plain health check
-  if (!paymentId && !conversationId) {
-    return new Response('OK', { status: 200 })
-  }
-
-  return handleCallback(origin, paymentId, conversationId, conversationData)
+  return handleCallback(
+    origin,
+    url.searchParams.get('paymentId')      ?? '',
+    url.searchParams.get('conversationId') ?? '',
+    url.searchParams.get('conversationData') ?? '',
+  )
 }
 
-// Some banks/configurations POST the callback data as form fields.
 export async function POST(request: NextRequest) {
   const origin = new URL(request.url).origin
-
   try {
-    const formData = await request.formData()
-    const paymentId      = String(formData.get('paymentId') ?? '')
-    const conversationId = String(formData.get('conversationId') ?? '')
-    const conversationData = String(formData.get('conversationData') ?? '')
-
-    return handleCallback(origin, paymentId, conversationId, conversationData)
+    const fd = await request.formData()
+    return handleCallback(
+      origin,
+      String(fd.get('paymentId')      ?? ''),
+      String(fd.get('conversationId') ?? ''),
+      String(fd.get('conversationData') ?? ''),
+    )
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[T03] POST callback parse error:', message)
-    return Response.redirect(
-      makeResultUrl(origin, { status: 'failure', error: `Callback hatası: ${message}` }),
-      303,
-    )
+    console.error('[T08] POST callback parse error:', message)
+    return Response.redirect(testResultUrl(origin, { status: 'failure', error: message }), 303)
   }
 }

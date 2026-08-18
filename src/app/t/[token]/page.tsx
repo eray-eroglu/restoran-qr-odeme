@@ -19,7 +19,10 @@ import Poller from './Poller'
 
 export const dynamic = 'force-dynamic'
 
-type Props = { params: Promise<{ token: string }> }
+type Props = {
+  params: Promise<{ token: string }>
+  searchParams: Promise<{ payFailed?: string; error?: string }>
+}
 
 async function getBillData(token: string) {
   const table = await prisma.table.findUnique({
@@ -39,8 +42,9 @@ async function getBillData(token: string) {
   return table
 }
 
-export default async function GuestPage({ params }: Props) {
+export default async function GuestPage({ params, searchParams }: Props) {
   const { token } = await params
+  const { payFailed, error } = await searchParams
   const table = await getBillData(token)
   if (!table) notFound()
 
@@ -77,7 +81,7 @@ export default async function GuestPage({ params }: Props) {
 
   // ── S1-b / S1-c: Open bill ───────────────────────────────────────────────
   return (
-    <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto">
+    <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto" data-token={token}>
       {/* Header */}
       <div className="px-5 py-4 flex justify-between items-baseline border-b border-brand-border">
         <span className="text-[19px] text-brand-black">
@@ -113,6 +117,11 @@ export default async function GuestPage({ params }: Props) {
 
       {/* Fixed bottom action card */}
       <div className="border-2 border-brand-black rounded-t-2xl px-5 pt-4 pb-5 flex flex-col gap-2.5 bg-brand-surface shadow-[0_-6px_0_rgba(0,0,0,0.04)]">
+        {payFailed && (
+          <div className="px-3 py-2 bg-white border border-brand-border rounded-lg text-[14px] text-brand-grey-dark">
+            ⚠ {error ?? 'Ödeme başarısız. Tekrar dene.'}
+          </div>
+        )}
         {!hasMode ? (
           // ── S1-b: mode not yet chosen ─────────────────────────────────────
           <>
@@ -120,16 +129,23 @@ export default async function GuestPage({ params }: Props) {
               <span className="text-[17px] text-brand-grey-dark">{s.amountLabel}</span>
               <span className="text-[34px] text-brand-black">{formatTL(totalKurus / 100)}</span>
             </div>
-            {/* Mode buttons — T08/T09/T10 will wire these up */}
+            {/* Mode buttons */}
             <div className="flex gap-2.5">
-              {[s.payFull, s.splitEqual, s.selectItems].map((label) => (
-                <div
-                  key={label}
-                  className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 cursor-pointer active:bg-brand-surface transition-colors"
-                >
-                  {label}
-                </div>
-              ))}
+              {/* Pay whole bill — T08 */}
+              <a
+                href={`/t/${token}/pay`}
+                className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 active:bg-brand-surface transition-colors"
+              >
+                {s.payFull}
+              </a>
+              {/* Split equally — T09 (not yet available) */}
+              <div className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 opacity-40 cursor-not-allowed">
+                {s.splitEqual}
+              </div>
+              {/* Pick my items — T10 (not yet available) */}
+              <div className="flex-1 h-[78px] border-2 border-brand-black rounded-lg flex items-center justify-center text-center text-[17px] leading-snug px-1.5 opacity-40 cursor-not-allowed">
+                {s.selectItems}
+              </div>
             </div>
           </>
         ) : (
