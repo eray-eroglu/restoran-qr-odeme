@@ -1,4 +1,7 @@
 // T03 — Step 1: initiate a 3D Secure payment.
+//
+// Base URL is derived from request.url — no NEXT_PUBLIC_BASE_URL dependency.
+// This means the callback URL sent to iyzico always matches the actual host.
 
 import { type NextRequest } from 'next/server'
 import crypto from 'crypto'
@@ -7,7 +10,14 @@ import { initiate3DS } from '@/lib/iyzico'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+  // Derive origin from the request itself — works on Vercel, preview branches, and localhost.
+  const origin = new URL(request.url).origin
+
+  function resultUrl(params: Record<string, string>) {
+    const u = new URL('/test-pay/result', origin)
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v))
+    return u.toString()
+  }
 
   try {
     const formData = await request.formData()
@@ -21,7 +31,8 @@ export async function POST(request: NextRequest) {
     }
 
     const conversationId = crypto.randomUUID()
-    const callbackUrl = `${baseUrl}/api/payment/callback`
+    // Callback URL: iyzico will POST here after 3DS. Must be public HTTPS.
+    const callbackUrl = `${origin}/api/payment/callback`
 
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -37,11 +48,13 @@ export async function POST(request: NextRequest) {
     })
 
     if (result.status !== 'success' || !result.threeDSHtmlContent) {
-      const msg = encodeURIComponent(result.errorMessage ?? 'Ödeme başlatılamadı')
-      const code = result.errorCode ?? ''
-      console.error('[T03] iyzico init failure:', result)
+      console.error('[T03] iyzico init failure:', JSON.stringify(result))
       return Response.redirect(
-        `${baseUrl}/test-pay/result?status=failure&error=${msg}&code=${code}`,
+        resultUrl({
+          status: 'failure',
+          error: result.errorMessage ?? 'Ödeme başlatılamadı',
+          code: result.errorCode ?? '',
+        }),
         303,
       )
     }
@@ -53,12 +66,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (err) {
-    // Surface the real error instead of returning a generic 500.
     const message = err instanceof Error ? err.message : String(err)
     console.error('[T03] unhandled error in initiate route:', message)
-    const msg = encodeURIComponent(`Sunucu hatası: ${message}`)
     return Response.redirect(
-      `${baseUrl}/test-pay/result?status=failure&error=${msg}`,
+      resultUrl({ status: 'failure', error: `Sunucu hatası: ${message}` }),
       303,
     )
   }
