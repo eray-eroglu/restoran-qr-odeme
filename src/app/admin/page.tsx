@@ -25,7 +25,11 @@ export default function AdminPage() {
       })
 
       if (res.ok) {
-        // Cookie is set — hard navigate so middleware evaluates the new cookie
+        // Mark this tab as authenticated in sessionStorage.
+        // sessionStorage is cleared when the tab is closed, so the layout guard
+        // in /admin/tables will force re-login on every new tab/browser open.
+        sessionStorage.setItem('admin_auth', '1')
+        // Hard navigate so the middleware evaluates the new cookie
         window.location.href = '/admin/tables'
         return
       }
