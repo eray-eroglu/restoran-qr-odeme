@@ -11,6 +11,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import SplitSelector from './SplitSelector'
+import Poller from '../Poller'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,12 +49,16 @@ export default async function SplitPage({ params }: Props) {
   const paidKurus  = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
 
   return (
-    <SplitSelector
-      billId={bill.id}
-      tableToken={token}
-      totalKurus={totalKurus}
-      paidKurus={paidKurus}
-      initialPeople={bill.splitPeople ?? 2}
-    />
+    <>
+      <SplitSelector
+        billId={bill.id}
+        tableToken={token}
+        totalKurus={totalKurus}
+        paidKurus={paidKurus}
+        initialPeople={bill.splitPeople ?? 2}
+      />
+      {/* Poll for admin changes (new items) — same mechanism as bill screen */}
+      <Poller billId={bill.id} />
+    </>
   )
 }
