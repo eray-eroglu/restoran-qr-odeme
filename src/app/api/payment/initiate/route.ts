@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
     const cvc            = String(formData.get('cvc')            ?? '').trim()
     // Tip: 0 / 5 / 10 / 15 (percent). R3: stored separately, not deducted from balance.
     const tipPercent     = Math.max(0, Math.min(100, parseInt(String(formData.get('tipPercent') ?? '0'), 10) || 0))
+    // payRest: guest chose to cover the full remaining balance (T12 "Kalanı ben ödeyeyim")
+    const payRest        = String(formData.get('payRest') ?? '') === '1'
 
     if (!tableToken || !billId || !cardNumber || !expiry || !cvc) {
       return failHtml('Eksik form alanı.')
@@ -86,9 +88,12 @@ export async function POST(request: NextRequest) {
     }
 
     // R2 + R8 (server-side — never trust client amount)
+    // payRest bypasses R2: guest covers the full remaining balance
     let amountKurus = remainingKurus
 
-    if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
+    if (payRest) {
+      amountKurus = remainingKurus // full remaining — no R2 share split
+    } else if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
       const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
       amountKurus  = unpaid === 1 ? remainingKurus : Math.floor(remainingKurus / unpaid)
     } else if (bill.mode === 'BY_ITEM') {

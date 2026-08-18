@@ -31,6 +31,7 @@ export const strings = {
     equalSplitMode: (n: number) => `eşit böl · ${n} kişi`,
     byItemMode: 'kendi ürünlerimi seç modu',
     byItemHint: 'ürün seç ve öde',
+    changeMode: 'ödeme yöntemini değiştir',
   },
 
   // E2 — Equal split person count

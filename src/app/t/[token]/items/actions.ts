@@ -30,6 +30,12 @@ export async function setByItemMode(formData: FormData) {
   // Already set — go straight to items
   if (bill.mode === 'BY_ITEM') redirect(`/t/${tableToken}/items`)
 
+  // R4: mode locked after first succeeded payment
+  const paidCount = await prisma.payment.count({
+    where: { billId, status: 'SUCCEEDED' },
+  })
+  if (paidCount > 0) redirect(`/t/${tableToken}`)
+
   // Wrong mode already set by someone else
   if (bill.mode === 'EQUAL_SPLIT') redirect(`/t/${tableToken}`)
 

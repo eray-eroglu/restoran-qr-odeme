@@ -11,14 +11,19 @@ import TipSelector from './TipSelector'
 
 export const dynamic = 'force-dynamic'
 
-type Props = { params: Promise<{ token: string }> }
+type Props = {
+  params: Promise<{ token: string }>
+  searchParams: Promise<{ payRest?: string }>
+}
 
 function kurusToDecimal(kuruş: number): string {
   return (Math.floor(kuruş / 100)).toString() + '.' + String(kuruş % 100).padStart(2, '0')
 }
 
-export default async function PayPage({ params }: Props) {
+export default async function PayPage({ params, searchParams }: Props) {
   const { token } = await params
+  const { payRest } = await searchParams
+  const isPayRest = payRest === '1'
   const s = strings.payment
 
   const table = await prisma.table.findUnique({
@@ -55,9 +60,12 @@ export default async function PayPage({ params }: Props) {
   const remainingKurus = totalKurus - paidKurus
 
   // R2 + R8: compute amount server-side, never trust client
+  // payRest=1 overrides R2 share — guest covers the full remaining balance (T12)
   let amountKurus = remainingKurus
 
-  if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
+  if (isPayRest) {
+    amountKurus = remainingKurus // full remaining, regardless of mode
+  } else if (bill.mode === 'EQUAL_SPLIT' && bill.splitPeople) {
     // R2: Math.floor for non-last; last pays full remaining
     const unpaid = Math.max(1, bill.splitPeople - bill.payments.length)
     amountKurus  = unpaid === 1 ? remainingKurus : Math.floor(remainingKurus / unpaid)
@@ -117,6 +125,7 @@ export default async function PayPage({ params }: Props) {
         <input type="hidden" name="tableToken" value={token} />
         <input type="hidden" name="billId" value={bill.id} />
         <input type="hidden" name="amountKurus" value={amountKurus} />
+        {isPayRest && <input type="hidden" name="payRest" value="1" />}
 
         <div className="px-5 py-5 flex flex-col gap-3">
           <p className="text-sm tracking-widest text-brand-grey-mid uppercase">{s.cardLabel}</p>

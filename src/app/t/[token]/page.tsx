@@ -17,6 +17,7 @@ import { strings, formatTL, formatTLNoUnit } from '@/lib/strings'
 import ProgressBar from '@/components/ProgressBar'
 import Poller from './Poller'
 import { setByItemMode } from './items/actions'
+import { resetMode } from './actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -189,14 +190,39 @@ export default async function GuestPage({ params, searchParams }: Props) {
                 <span className="text-[15px] opacity-70">{s.byItemHint}</span>
               </a>
             ) : (
-              // EQUAL_SPLIT: pay my share directly
-              <a
-                href={`/t/${token}/pay`}
-                className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
-              >
-                <span className="text-[26px]">{s.payMyShare}</span>
-                <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
-              </a>
+              // EQUAL_SPLIT: pay my share + option to cover the rest
+              <>
+                <a
+                  href={`/t/${token}/pay`}
+                  className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
+                >
+                  <span className="text-[26px]">{s.payMyShare}</span>
+                  <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
+                </a>
+                {/* "Kalanı ben ödeyeyim" — pays full remaining, ignores R2 share (T12) */}
+                {remainingKurus > shareKurus && (
+                  <a
+                    href={`/t/${token}/pay?payRest=1`}
+                    className="h-[56px] border-2 border-dashed border-brand-grey-mid rounded-lg flex items-center justify-center text-[17px] text-brand-grey-dark active:bg-brand-surface transition-colors"
+                  >
+                    {s.payRest} · {formatTL(remainingKurus / 100)}
+                  </a>
+                )}
+              </>
+            )}
+
+            {/* R4: mode change allowed before first payment */}
+            {splitPaidCount === 0 && (
+              <form action={resetMode} className="flex justify-center">
+                <input type="hidden" name="billId"     value={bill.id} />
+                <input type="hidden" name="tableToken" value={token} />
+                <button
+                  type="submit"
+                  className="text-[14px] text-brand-grey-mid underline underline-offset-2 py-1"
+                >
+                  {s.changeMode}
+                </button>
+              </form>
             )}
           </>
         )}
