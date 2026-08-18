@@ -54,10 +54,9 @@ export default async function AdminTableDetailPage({ params }: Props) {
   const hasBill = bill !== null
 
   // Derive totals from bill items / payments (all in kuruş)
-  const totalKurus = bill ? bill.items.reduce((s, i) => s + i.priceKurus, 0) : 0
-  const paidKurus = bill
-    ? bill.payments.reduce((s, p) => s + p.amountKurus + p.tipKurus, 0)
-    : 0
+  // R3: only bill share (amountKurus) counts toward balance — tips excluded from remaining
+  const totalKurus     = bill ? bill.items.reduce((s, i) => s + i.priceKurus, 0) : 0
+  const paidKurus      = bill ? bill.payments.reduce((s, p) => s + p.amountKurus, 0) : 0
   const remainingKurus = totalKurus - paidKurus
 
   // Derive bill status label

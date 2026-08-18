@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { strings, formatTL } from '@/lib/strings'
 import ExpiryInput from './ExpiryInput'
+import TipSelector from './TipSelector'
 
 export const dynamic = 'force-dynamic'
 
@@ -159,16 +160,8 @@ export default async function PayPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Sticky pay button */}
-        <div className="mt-auto border-t-2 border-brand-black px-5 py-4 bg-brand-surface flex flex-col gap-2">
-          <button
-            type="submit"
-            className="w-full h-[70px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5"
-          >
-            <span className="text-[26px]">{s.pay(formatTL(amountKurus / 100))}</span>
-          </button>
-          <p className="text-center text-[14px] text-brand-grey-mid">{s.secureNote}</p>
-        </div>
+        {/* Tip selector + pay button (client component — updates total live) */}
+        <TipSelector amountKurus={amountKurus} payLabel="Öde ·" />
       </form>
     </main>
   )

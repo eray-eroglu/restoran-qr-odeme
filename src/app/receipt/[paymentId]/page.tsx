@@ -148,6 +148,10 @@ export default async function ReceiptPage({ params }: Props) {
           </div>
         )}
         <p className="text-[15px] text-brand-grey-mid leading-relaxed">{s.receiptNote}</p>
+        {/* Legal notice — not a fiscal receipt */}
+        <p className="text-[13px] text-brand-grey-light leading-relaxed border-t border-brand-border pt-2 mt-1">
+          Bu belge mali fiş veya fatura değildir. Resmi fişinizi kasadan alınız.
+        </p>
       </div>
 
       {/* Back to bill */}

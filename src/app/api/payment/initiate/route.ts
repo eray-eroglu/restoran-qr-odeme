@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
     const cardNumber     = String(formData.get('cardNumber')     ?? '').replace(/\s/g, '')
     const expiry         = String(formData.get('expiry')         ?? '')
     const cvc            = String(formData.get('cvc')            ?? '').trim()
+    // Tip: 0 / 5 / 10 / 15 (percent). R3: stored separately, not deducted from balance.
+    const tipPercent     = Math.max(0, Math.min(100, parseInt(String(formData.get('tipPercent') ?? '0'), 10) || 0))
 
     if (!tableToken || !billId || !cardNumber || !expiry || !cvc) {
       return failHtml('Eksik form alanı.')
@@ -101,13 +103,18 @@ export async function POST(request: NextRequest) {
 
     if (amountKurus <= 0) return failHtml('Seçili ürün yok veya ödeme gereken tutar 0.')
 
+    // R3: tip is stored separately and does NOT count toward balance / auto-close
+    const tipKurus = Math.round(amountKurus * tipPercent / 100)
+    // iyzico total = bill share + tip
+    const chargeKurus = amountKurus + tipKurus
+
     // ── Create Payment(PENDING) in DB ─────────────────────────────────────
     const payment = await prisma.payment.create({
       data: {
         billId,
         sessionId,
-        amountKurus,
-        tipKurus: 0,
+        amountKurus,   // bill share only (R3)
+        tipKurus,      // tip stored separately
         status: 'PENDING',
         // conversationId will be set to payment.id below (needs the id first)
       },
@@ -128,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     const result = await initiate3DS({
       conversationId: payment.id,
-      amountDecimal:  kurusToDecimal(amountKurus),
+      amountDecimal:  kurusToDecimal(chargeKurus), // bill share + tip (what iyzico charges)
       callbackUrl,
       card: {
         cardHolderName: cardHolderName || 'Misafir Müşteri',
