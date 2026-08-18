@@ -127,6 +127,7 @@ export const strings = {
     tables: {
       title: 'Masalar',
       newTable: 'Masa oluştur',
+      sampleTable: 'Örnek masa oluştur',
       newBill: 'Adisyon aç',
       colTable: 'Masa',
       colTotal: 'Toplam',
@@ -135,6 +136,7 @@ export const strings = {
       colMode: 'Mod',
       colActions: 'İşlemler',
       noTables: 'Henüz masa yok.',
+      closedSection: 'Kapalı masalar',
       statusOpen: 'açık',
       statusClosed: 'kapalı',
       statusNoBill: '—',
