@@ -5,6 +5,7 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { strings, formatTL } from '@/lib/strings'
+import ExpiryInput from './ExpiryInput'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,17 +116,8 @@ export default async function PayPage({ params }: Props) {
           />
 
           <div className="flex gap-3">
-            {/* Expiry MM/YY */}
-            <input
-              name="expiry"
-              type="text"
-              inputMode="numeric"
-              placeholder={s.expiry}
-              autoComplete="cc-exp"
-              maxLength={5}
-              required
-              className="flex-1 h-[60px] border-2 border-brand-black rounded-lg px-4 text-[19px] text-brand-black placeholder:text-brand-grey-light focus:outline-none tracking-widest"
-            />
+            {/* Expiry MM/YY — auto-inserts "/" after 2nd digit */}
+            <ExpiryInput className="flex-1 h-[60px] border-2 border-brand-black rounded-lg px-4 text-[19px] text-brand-black placeholder:text-brand-grey-light focus:outline-none tracking-widest" />
             {/* CVC */}
             <input
               name="cvc"
