@@ -7,10 +7,10 @@
 
 import { useState, useRef } from 'react'
 
+// iyzico sandbox test cards — full list: https://sandbox-merchant.iyzipay.com/test-cards
 const TEST_CARDS = [
-  // iyzico sandbox test cards: https://dev.iyzipay.com/en/sandbox/test-cards
   { label: 'Başarılı (Akbank Visa)', number: '4603450000000000', expiry: '12/2030', cvc: '000' },
-  { label: 'Başarısız (Finansbank Visa)', number: '4987490000000002', expiry: '12/2030', cvc: '000' },
+  { label: 'Başarısız (iyzico hata kartı)', number: '5528790000000008', expiry: '12/2030', cvc: '000' },
 ]
 
 export default function TestPayPage() {
