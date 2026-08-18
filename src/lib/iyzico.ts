@@ -140,7 +140,7 @@ export async function initiate3DS(params: {
       name: 'Misafir',
       surname: 'Müşteri',
       gsmNumber: '+905000000000',
-      email: 'misafir@restoran-qr.test',
+      email: 'misafir@example.com',
       // Standard test identity number from iyzico sandbox docs
       identityNumber: '74300864791',
       lastLoginDate: '2026-01-01 00:00:00',
