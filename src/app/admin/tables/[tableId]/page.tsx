@@ -7,7 +7,7 @@ import { headers } from 'next/headers'
 import QRCode from 'qrcode'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { formatTL, formatTLNoUnit, formatDateTime } from '@/lib/strings'
+import { strings, formatTL, formatTLNoUnit, formatDateTime } from '@/lib/strings'
 import { openBillForTable } from './actions'
 import BillEditor from './BillEditor'
 import CloseButton from './CloseButton'
@@ -113,7 +113,7 @@ export default async function AdminTableDetailPage({ params }: Props) {
         {/* Panel 1: Bill items + menu */}
         <div className="flex-1 bg-white border-2 border-brand-black rounded-xl overflow-hidden min-w-0">
           <div className="px-5 py-3.5 border-b border-brand-border">
-            <h2 className="text-[17px] text-brand-black">Adisyon</h2>
+            <h2 className="text-[17px] text-brand-black">{strings.admin.tableDetail.billPanelLabel}</h2>
           </div>
           <div className="px-5 py-4">
             {hasBill ? (
@@ -137,7 +137,7 @@ export default async function AdminTableDetailPage({ params }: Props) {
               />
             ) : (
               <p className="text-brand-grey-mid py-4 text-base">
-                Henüz adisyon açılmamış. "Ödemeye Aç" butonunu kullan.
+                {strings.admin.tableDetail.noBill}
               </p>
             )}
           </div>
@@ -146,7 +146,7 @@ export default async function AdminTableDetailPage({ params }: Props) {
         {/* Panel 2: QR code */}
         <div className="w-[240px] bg-white border-2 border-brand-black rounded-xl overflow-hidden flex-none">
           <div className="px-5 py-3.5 border-b border-brand-border">
-            <h2 className="text-[17px] text-brand-black">QR Kodu</h2>
+            <h2 className="text-[17px] text-brand-black">{strings.admin.tableDetail.qrPanelLabel}</h2>
           </div>
           <div className="px-5 py-6 flex flex-col items-center gap-4">
             {qrDataUrl ? (
@@ -170,7 +170,7 @@ export default async function AdminTableDetailPage({ params }: Props) {
               </>
             ) : (
               <div className="w-[160px] h-[160px] border-2 border-brand-border rounded-lg flex items-center justify-center text-sm text-brand-grey-light text-center leading-snug">
-                Adisyon açıldığında QR burada görünür
+                {strings.admin.tableDetail.qrNoBill}
               </div>
             )}
           </div>
@@ -179,33 +179,33 @@ export default async function AdminTableDetailPage({ params }: Props) {
         {/* Panel 3: Payment breakdown */}
         <div className="w-[260px] bg-white border-2 border-brand-black rounded-xl overflow-hidden flex-none">
           <div className="px-5 py-3.5 border-b border-brand-border">
-            <h2 className="text-[17px] text-brand-black">Döküm</h2>
+            <h2 className="text-[17px] text-brand-black">{strings.admin.tableDetail.breakdown}</h2>
           </div>
           <div className="px-5 py-4 flex flex-col gap-3">
             {hasBill ? (
               <>
                 <div className="flex justify-between text-[17px] text-brand-grey-dark">
-                  <span>Hesap toplamı</span>
+                  <span>{strings.admin.tableDetail.breakdownTotal}</span>
                   <span>{formatTL(totalKurus / 100)}</span>
                 </div>
                 <div className="flex justify-between text-[17px] text-brand-grey-dark">
-                  <span>Ödenen (hesap)</span>
+                  <span>{strings.admin.tableDetail.breakdownPaid}</span>
                   <span>{formatTL(paidKurus / 100)}</span>
                 </div>
                 {totalTipKurus > 0 && (
                   <div className="flex justify-between text-[17px] text-brand-grey-dark">
-                    <span>Bahşiş</span>
+                    <span>{strings.admin.tableDetail.breakdownTip}</span>
                     <span>{formatTL(totalTipKurus / 100)}</span>
                   </div>
                 )}
                 {totalTipKurus > 0 && (
                   <div className="flex justify-between text-[17px] text-brand-black">
-                    <span>Toplam tahsilat</span>
+                    <span>{strings.admin.tableDetail.breakdownCollected}</span>
                     <span>{formatTL(totalCollectedKurus / 100)}</span>
                   </div>
                 )}
                 <div className="pt-3 border-t border-brand-border flex justify-between text-[19px] text-brand-black font-medium">
-                  <span>Kalan</span>
+                  <span>{strings.admin.tableDetail.breakdownRemaining}</span>
                   <span>{formatTL(remainingKurus / 100)}</span>
                 </div>
 
@@ -213,22 +213,22 @@ export default async function AdminTableDetailPage({ params }: Props) {
                 {bill.payments.length > 0 && (
                   <div className="pt-3 border-t border-brand-border flex flex-col gap-3">
                     <p className="text-xs font-medium tracking-wider uppercase text-brand-grey-mid">
-                      Ödemeler
+                      {strings.admin.tableDetail.breakdownPayments}
                     </p>
                     {bill.payments.map((pay, i) => (
                       <div key={pay.id} className="text-[14px] text-brand-grey-dark flex flex-col gap-0.5">
                         <div className="flex justify-between">
-                          <span className="text-brand-grey-mid">#{i + 1} hesap payı</span>
+                          <span className="text-brand-grey-mid">{strings.admin.tableDetail.paymentShareLabel(i + 1)}</span>
                           <span>{formatTLNoUnit(pay.amountKurus / 100)}</span>
                         </div>
                         {pay.tipKurus > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-brand-grey-mid">bahşiş</span>
+                            <span className="text-brand-grey-mid">{strings.admin.tableDetail.paymentTipLabel}</span>
                             <span>{formatTLNoUnit(pay.tipKurus / 100)}</span>
                           </div>
                         )}
                         <div className="flex justify-between font-medium text-brand-black">
-                          <span>toplam</span>
+                          <span>{strings.admin.tableDetail.paymentTotalLabel}</span>
                           <span>
                             {formatTLNoUnit((pay.amountKurus + pay.tipKurus) / 100)}
                           </span>
@@ -243,7 +243,7 @@ export default async function AdminTableDetailPage({ params }: Props) {
               </>
             ) : (
               <p className="text-brand-grey-mid text-sm py-2">
-                Adisyon açıldığında döküm burada görünür.
+                {strings.admin.tableDetail.noBreakdown}
               </p>
             )}
           </div>

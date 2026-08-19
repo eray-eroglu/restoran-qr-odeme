@@ -26,7 +26,7 @@ export default function SplitSelector({ billId, tableToken, totalKurus, paidKuru
   const shareKurus     = Math.floor(remainingKurus / people)
 
   return (
-    <form action={setEqualSplit} className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto">
+    <form action={setEqualSplit} className="flex flex-col h-dvh bg-white max-w-[390px] mx-auto overflow-hidden">
       {/* Hidden context fields */}
       <input type="hidden" name="billId"     value={billId} />
       <input type="hidden" name="tableToken" value={tableToken} />

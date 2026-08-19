@@ -100,7 +100,7 @@ export default async function GuestPage({ params, searchParams }: Props) {
 
   // ── S1-b / S1-c: Open bill ───────────────────────────────────────────────
   return (
-    <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto" data-token={token}>
+    <main className="flex flex-col h-dvh bg-white max-w-[390px] mx-auto overflow-hidden" data-token={token}>
       {/* Header */}
       <div className="px-5 py-4 flex justify-between items-baseline border-b border-brand-border">
         <span className="text-[19px] text-brand-black">

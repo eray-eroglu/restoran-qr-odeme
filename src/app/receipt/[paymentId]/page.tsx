@@ -107,7 +107,7 @@ export default async function ReceiptPage({ params }: Props) {
         </div>
         {payment.tipKurus > 0 && (
           <div className="flex justify-between">
-            <span>Bahşiş</span>
+            <span>{strings.payment.tipLabel}</span>
             <span>{formatTLNoUnit(payment.tipKurus / 100)}</span>
           </div>
         )}
@@ -144,13 +144,13 @@ export default async function ReceiptPage({ params }: Props) {
       <div className="flex-1 min-h-0 px-5 py-4 flex flex-col gap-2">
         {remaining > 0 && (
           <div className="p-3 border-2 border-dashed border-brand-border rounded-lg text-base leading-relaxed text-brand-grey-dark">
-            Masada kalan: {formatTL(remaining / 100)}
+            {s.remainingInTable(formatTL(remaining / 100))}
           </div>
         )}
         <p className="text-[15px] text-brand-grey-mid leading-relaxed">{s.receiptNote}</p>
         {/* Legal notice — not a fiscal receipt */}
         <p className="text-[13px] text-brand-grey-light leading-relaxed border-t border-brand-border pt-2 mt-1">
-          Bu belge mali fiş veya fatura değildir. Resmi fişinizi kasadan alınız.
+          {s.fiscalNotice}
         </p>
       </div>
 

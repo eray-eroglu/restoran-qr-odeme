@@ -91,7 +91,7 @@ export default async function PayPage({ params, searchParams }: Props) {
     // Nothing left to pay
     return (
       <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto justify-center px-6 gap-4">
-        <p className="text-[22px] text-brand-black">Hesap zaten ödendi.</p>
+        <p className="text-[22px] text-brand-black">{s.alreadyPaid}</p>
         <a href={`/t/${token}`} className="text-brand-grey-dark underline">{s.back}</a>
       </main>
     )

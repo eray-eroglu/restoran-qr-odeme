@@ -13,13 +13,15 @@
  */
 
 import { useState } from 'react'
-import { formatTL, formatTLNoUnit } from '@/lib/strings'
+import { strings, formatTL, formatTLNoUnit } from '@/lib/strings'
+
+const s = strings.payment
 
 const TIP_OPTIONS = [
-  { label: 'Yok',  pct: 0  },
-  { label: '%5',   pct: 5  },
-  { label: '%10',  pct: 10 },
-  { label: '%15',  pct: 15 },
+  { label: s.tipNone, pct: 0  },
+  { label: s.tip5,    pct: 5  },
+  { label: s.tip10,   pct: 10 },
+  { label: s.tip15,   pct: 15 },
 ] as const
 
 type Props = {
@@ -40,7 +42,7 @@ export default function TipSelector({ amountKurus, payLabel }: Props) {
 
       {/* Tip row */}
       <div className="px-5 py-4 border-b border-brand-border flex flex-col gap-3">
-        <p className="text-sm tracking-widest text-brand-grey-mid uppercase">BAHŞİŞ</p>
+        <p className="text-sm tracking-widest text-brand-grey-mid uppercase">{s.tipSectionLabel}</p>
 
         {/* Four option buttons */}
         <div className="flex gap-2">
@@ -67,11 +69,11 @@ export default function TipSelector({ amountKurus, payLabel }: Props) {
         {tipKurus > 0 && (
           <div className="flex flex-col gap-1 text-[15px] text-brand-grey-dark">
             <div className="flex justify-between">
-              <span>Hesap payı</span>
+              <span>{s.billShare}</span>
               <span>{formatTLNoUnit(amountKurus / 100)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Bahşiş ({tipPct}%)</span>
+              <span>{s.tipBreakdown(tipPct!)}</span>
               <span>{formatTLNoUnit(tipKurus / 100)}</span>
             </div>
           </div>
@@ -86,7 +88,7 @@ export default function TipSelector({ amountKurus, payLabel }: Props) {
         >
           <span className="text-[26px]">{payLabel} {formatTL(totalKurus / 100)}</span>
         </button>
-        <p className="text-center text-[14px] text-brand-grey-mid">Sonraki adımda bankanızın 3D Secure sayfası açılır.</p>
+        <p className="text-center text-[14px] text-brand-grey-mid">{s.secureNote}</p>
       </div>
     </>
   )

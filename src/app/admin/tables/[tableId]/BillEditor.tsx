@@ -10,7 +10,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { addBillItem, removeBillItem } from './actions'
-import { formatTL, formatTLNoUnit } from '@/lib/strings'
+import { strings, formatTL, formatTLNoUnit } from '@/lib/strings'
 
 type BillItem = {
   id: string
@@ -58,7 +58,7 @@ export default function BillEditor({ billId, tableId, items, menu, totalKurus, c
       {/* Current bill items */}
       <div className="flex flex-col gap-2">
         {items.length === 0 ? (
-          <p className="text-brand-grey-mid text-base py-2">Adisyon boş.</p>
+          <p className="text-brand-grey-mid text-base py-2">{strings.admin.tableDetail.emptyBill}</p>
         ) : (
           <>
             {items.map((item) => (
@@ -98,7 +98,7 @@ export default function BillEditor({ billId, tableId, items, menu, totalKurus, c
               </div>
             ))}
             <div className="pt-3 border-t border-brand-border flex justify-between text-[19px] font-medium">
-              <span className="text-brand-black">Toplam</span>
+              <span className="text-brand-black">{strings.admin.tableDetail.total}</span>
               <span className="text-brand-black">{formatTL(totalKurus / 100)}</span>
             </div>
           </>

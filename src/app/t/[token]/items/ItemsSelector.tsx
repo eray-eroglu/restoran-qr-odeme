@@ -135,7 +135,7 @@ export default function ItemsSelector({ billId, tableToken, items, mySessionId }
   const remainingKurus  = items.filter((i) => !i.isPaid).reduce((s, i) => s + i.priceKurus, 0)
 
   return (
-    <main className="flex flex-col min-h-screen bg-white max-w-[390px] mx-auto">
+    <main className="flex flex-col h-dvh bg-white max-w-[390px] mx-auto overflow-hidden">
       {/* Header — live selection total */}
       <div className="px-5 pt-4 pb-4 border-b-2 border-brand-black flex flex-col gap-1.5">
         <p className="text-sm tracking-widest text-brand-grey-mid uppercase">
