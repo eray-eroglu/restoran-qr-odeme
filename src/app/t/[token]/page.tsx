@@ -12,6 +12,7 @@
  */
 
 import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 import { strings, formatTL, formatTLNoUnit } from '@/lib/strings'
 import ProgressBar from '@/components/ProgressBar'
@@ -36,7 +37,7 @@ async function getBillData(token: string) {
         take: 1,
         include: {
           items: { orderBy: { createdAt: 'asc' } },
-          payments: { where: { status: 'SUCCEEDED' } },
+          payments: { where: { status: 'SUCCEEDED' }, select: { amountKurus: true, sessionId: true } },
         },
       },
     },
@@ -71,6 +72,21 @@ export default async function GuestPage({ params, searchParams }: Props) {
   const totalKurus = bill.items.reduce((s, i) => s + i.priceKurus, 0)
   const paidKurus = bill.payments.reduce((s, p) => s + p.amountKurus, 0)
   const remainingKurus = totalKurus - paidKurus
+
+  // ── Check if this guest has already paid (EQUAL_SPLIT) ───────────────────
+  // If yes, hide "Payımı öde" — only "Kalanı ben ödeyeyim" makes sense for them
+  const cookieStore = await cookies()
+  const guestToken  = cookieStore.get('guest_session')?.value ?? null
+  let mySessionId: string | null = null
+  if (guestToken) {
+    const session = await prisma.session.findUnique({
+      where: { token: guestToken },
+      select: { id: true, billId: true },
+    })
+    if (session && session.billId === bill.id) mySessionId = session.id
+  }
+  const mySessionHasPaid = mySessionId !== null &&
+    bill.payments.some((p) => p.sessionId === mySessionId)
 
   const hasMode    = bill.mode !== 'NONE'
   const isEqualSplit = bill.mode === 'EQUAL_SPLIT'
@@ -192,15 +208,19 @@ export default async function GuestPage({ params, searchParams }: Props) {
             ) : (
               // EQUAL_SPLIT: pay my share + option to cover the rest
               <>
-                <a
-                  href={`/t/${token}/pay`}
-                  className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
-                >
-                  <span className="text-[26px]">{s.payMyShare}</span>
-                  <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
-                </a>
-                {/* "Kalanı ben ödeyeyim" — pays full remaining, ignores R2 share (T12) */}
-                {remainingKurus > shareKurus && (
+                {/* "Payımı öde" — only shown if this guest hasn't paid yet */}
+                {!mySessionHasPaid && (
+                  <a
+                    href={`/t/${token}/pay`}
+                    className="h-[76px] border-2 border-brand-black rounded-lg flex flex-col items-center justify-center bg-brand-black text-white gap-0.5 active:opacity-80 transition-opacity"
+                  >
+                    <span className="text-[26px]">{s.payMyShare}</span>
+                    <span className="text-[19px] opacity-75">{formatTL(shareKurus / 100)}</span>
+                  </a>
+                )}
+                {/* "Kalanı ben ödeyeyim" — pays full remaining, ignores R2 share (T12)
+                    Shown when: remaining > share (others still owe) OR guest already paid (their only option) */}
+                {(remainingKurus > shareKurus || mySessionHasPaid) && remainingKurus > 0 && (
                   <a
                     href={`/t/${token}/pay?payRest=1`}
                     className="h-[56px] border-2 border-dashed border-brand-grey-mid rounded-lg flex items-center justify-center text-[17px] text-brand-grey-dark active:bg-brand-surface transition-colors"
