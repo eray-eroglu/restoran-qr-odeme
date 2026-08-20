@@ -32,8 +32,16 @@ function parseExpiry(raw: string): { month: string; year: string } | null {
 export async function POST(request: NextRequest) {
   const origin = new URL(request.url).origin
 
+  // tableToken is set after formData is parsed; failHtml closes over it so
+  // errors always redirect back to the guest bill screen with the error shown.
+  let tableToken = ''
+
   function failHtml(message: string) {
-    const url = `${origin}/t/error?error=${encodeURIComponent(message)}`
+    // Redirect to bill screen with payFailed flag — that page already handles it.
+    // Fall back to root if tableToken not yet parsed (parse error before formData).
+    const url = tableToken
+      ? `${origin}/t/${tableToken}?payFailed=1&error=${encodeURIComponent(message)}`
+      : `${origin}/?error=${encodeURIComponent(message)}`
     return new Response(
       `<!doctype html><html><head><meta http-equiv="refresh" content="0;url=${url}"></head>
        <body><a href="${url}">Devam et</a></body></html>`,
@@ -43,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData()
-    const tableToken     = String(formData.get('tableToken')     ?? '')
+    tableToken           = String(formData.get('tableToken')     ?? '')
     const billId         = String(formData.get('billId')         ?? '')
     const cardHolderName = String(formData.get('cardHolderName') ?? '').trim()
     const cardNumber     = String(formData.get('cardNumber')     ?? '').replace(/\s/g, '')
